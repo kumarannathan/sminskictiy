@@ -548,6 +548,28 @@ return function(deps)
 		-- that opens either -- which also buys back the row the menu needed.
 		---------------------------------------------------------------------
 		---------------------------------------------------------------------
+		-----------------------------------------------------------------
+		-- HUD SIZES, IN ONE PLACE (docs/PIXEL_UI.md section 5).
+		--
+		-- These were magic numbers at eight different call sites, which is
+		-- why the dock and the pills disagreed about how tall a row is.
+		-- EVERY VALUE IS A MULTIPLE OF 4, so nothing lands on a half pixel
+		-- once UI.quantise has scaled it.
+		--
+		-- The layout ARITHMETIC is untouched -- H.layout still derives every
+		-- position from UI.safe(). Only what it consumes changed.
+		-----------------------------------------------------------------
+		local Z = {
+			tile = 56, tileGap = 12, cell = 76, -- dock
+			coinW = 168, coinH = 44,
+			capW = 168, capH = 40,
+			whereH = 44, whereMin = 180, whereMax = 320,
+			missionH = 40,
+			mini = 152,
+			promptW = 468, promptH = 96,
+		}
+		H.Z = Z
+
 		-- THE DOCK.
 		--
 		-- The split above is still the right idea -- things that move you on one
@@ -566,7 +588,7 @@ return function(deps)
 		dock.Name = "Dock"
 		dock.BackgroundTransparency = 1
 		dock.AnchorPoint = Vector2.new(0.5, 1)
-		dock.Size = UDim2.fromOffset(6 * 64 + 5 * 14, 84)
+		dock.Size = UDim2.fromOffset(6 * Z.tile + 5 * Z.tileGap, Z.cell)
 		dock.Parent = root
 		H.dock = dock
 		do
@@ -586,12 +608,12 @@ return function(deps)
 			local cell = Instance.new("Frame")
 			cell.Name = label
 			cell.BackgroundTransparency = 1
-			cell.Size = UDim2.fromOffset(64, 84)
+			cell.Size = UDim2.fromOffset(Z.tile, Z.cell)
 			cell.LayoutOrder = order
 			cell.Parent = dock
-			UI.button(cell, "", { size = UDim2.fromOffset(64, 64), color = col,
-				icon = iconName, iconOnly = true, radius = 20, onClick = fn })
-			UI.text(cell, label, { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.fromOffset(0, 66),
+			UI.button(cell, "", { size = UDim2.fromOffset(Z.tile, Z.tile), color = col,
+				icon = iconName, iconOnly = true, onClick = fn })
+			UI.text(cell, label, { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.fromOffset(0, Z.tile + 4),
 				Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = C.white, stroke = 1.5 })
 			return cell
 		end
@@ -622,7 +644,7 @@ return function(deps)
 		end })
 		local pill = Instance.new("Frame")
 		pill.BackgroundColor3 = C.paper
-		pill.Size = UDim2.fromOffset(170, 48)
+		pill.Size = UDim2.fromOffset(Z.coinW, Z.coinH)
 		pill.Parent = root
 		UI.skin(pill, "pill", 24 / 80)
 		UI.icon(pill, "coin", { Size = UDim2.fromOffset(52, 52), Position = UDim2.new(0, -12, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), ZIndex = 3 })
@@ -653,7 +675,7 @@ return function(deps)
 		-- column, so the arithmetic the comment describes is no longer load-
 		-- bearing. It cannot collide with the coin pill because it is stacked
 		-- under it rather than squeezed beside it.
-		local capHolder, capFace = UI.card(root, UDim2.fromOffset(150, 48), UDim2.new(), Vector2.new(0, 0), C.paper)
+		local capHolder, capFace = UI.card(root, UDim2.fromOffset(Z.capW, Z.capH), UDim2.new(), Vector2.new(0, 0), C.paper)
 		capHolder.Name = "CapsulePill"
 		capHolder.Visible = false
 		H.capsule = { holder = capHolder, face = capFace }
@@ -703,7 +725,7 @@ return function(deps)
 		local where = Instance.new("Frame")
 		H.where = where
 		where.BackgroundColor3 = C.paper
-		where.Size = UDim2.fromOffset(320, 52)
+		where.Size = UDim2.fromOffset(Z.whereMax, Z.whereH)
 		where.Parent = root
 		UI.skin(where, "pill", 30 / 80)
 		H.district = UI.text(where, "SMINSKI CITY", { Size = UDim2.new(1, -20, 0, 30), Position = UDim2.fromOffset(10, 6), Font = Enum.Font.FredokaOne, TextSize = 24, ZIndex = 3 })
@@ -713,7 +735,7 @@ return function(deps)
 		-- cannot be resized after the fact, because its pan maths is derived
 		-- from the radius at build time (see CityMinimap.build).
 		-----------------------------------------------------------------------
-		local mini = Mini.build(root, 150, function() City.toggleMap() end)
+		local mini = Mini.build(root, Z.mini, function() City.toggleMap() end)
 		H.mini = mini
 		-----------------------------------------------------------------------
 		-- THE MISSION BAR. The thing you are working towards, on screen while
@@ -723,7 +745,7 @@ return function(deps)
 		-- It hides itself when there is nothing to say -- an empty progress bar
 		-- is worse than no progress bar.
 		-----------------------------------------------------------------------
-		local mh, mcard = UI.card(root, UDim2.fromOffset(360, 48), UDim2.new(), Vector2.new(0.5, 1), C.paper)
+		local mh, mcard = UI.card(root, UDim2.fromOffset(360, Z.missionH), UDim2.new(), Vector2.new(0.5, 1), C.paper)
 		mh.Name = "MissionBar"
 		mh.Visible = false
 		H.mission = mh
@@ -799,7 +821,7 @@ return function(deps)
 			H.setJobsOpen(not H.jobsOpen)
 			Audio.play("Click", H.jobsOpen and 1.1 or 0.9, 0.6)
 		end)
-		local ph, prompt = UI.card(root, UDim2.fromOffset(470, 104), UDim2.new(0.5, 0, 1, -54), Vector2.new(0.5, 1), C.paper)
+		local ph, prompt = UI.card(root, UDim2.fromOffset(Z.promptW, Z.promptH), UDim2.new(0.5, 0, 1, -54), Vector2.new(0.5, 1), C.paper)
 		ph.Visible = false
 		H.prompt = ph
 		H.pIcon = UI.icon(prompt, "star", { Size = UDim2.fromOffset(84, 84), Position = UDim2.fromOffset(10, 10), ZIndex = 3 })
@@ -849,16 +871,16 @@ return function(deps)
 			local L, R, top = sa.side, sa.w - sa.side, sa.top
 
 			mini.holder.Position = UDim2.fromOffset(L, top)
-			local col = L + 150 + 14 -- the column to the right of the minimap
+			local col = L + Z.mini + Z.tileGap -- the column to the right of the minimap
 
 			pill.AnchorPoint = Vector2.new(0, 0)
 			pill.Position = UDim2.fromOffset(col, top + 2)
 			capHolder.AnchorPoint = Vector2.new(0, 0)
-			capHolder.Position = UDim2.fromOffset(col, top + 56)
+			capHolder.Position = UDim2.fromOffset(col, top + Z.coinH + 8)
 
 			where.AnchorPoint = Vector2.new(0, 0)
 			where.Position = UDim2.fromOffset(col, top + 110)
-			where.Size = UDim2.fromOffset(math.clamp(R - col - 128, 180, 320), compact and 42 or 52)
+			where.Size = UDim2.fromOffset(math.clamp(R - col - 128, Z.whereMin, Z.whereMax), compact and 36 or Z.whereH)
 			H.street.Visible = not compact
 			H.district.TextSize = compact and 19 or 24
 			H.district.Position = UDim2.fromOffset(12, compact and 7 or 5)
@@ -934,8 +956,8 @@ return function(deps)
 			-- and on a 320x568 phone the thing the left column actually collides
 			-- with is our own prompt bar -- 250px above any touch control. The
 			-- bottom stack is positioned first precisely so this can ask.
-			local promptTop = promptBottom - 104 * promptScale.Scale
-			local promptHalf = 470 * promptScale.Scale / 2
+			local promptTop = promptBottom - Z.promptH * promptScale.Scale
+			local promptHalf = Z.promptW * promptScale.Scale / 2
 			local function headroom(x0, x1)
 				local y = lowest(x0, x1)
 				if x0 < cx + promptHalf and x1 > cx - promptHalf then

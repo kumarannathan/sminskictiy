@@ -871,8 +871,13 @@ Config.Crops = {
 		color = Color3.fromRGB(250, 210, 90), level = 2 },
 }
 Config.Farm = {
-	WaterCut = 1 / 3,   -- watering removes a third of the REMAINING time
-	FertCut = 0.3,      -- fertiliser removes 30% of the remaining time
+	-- WATERING IS FREE, SO IT IS THE SMALLER BOOST. This was 1/3, copied
+	-- from Config.Garden -- which made the free action BETTER than the 25
+	-- coin one and turned fertiliser into a trap. The headless economy test
+	-- caught it. Fertiliser now matches the 0.7x of base that
+	-- docs/FARMING.md quotes, and watering sits below it.
+	WaterCut = 0.2,     -- watering removes a fifth of the REMAINING time
+	FertCut = 0.3,      -- fertiliser removes 30% -- always more than watering
 	FertCost = 25,      -- coins, per plot
 	StartPlots = 4,     -- a starter parcel. The plot count is the throttle on
 	MaxPlots = 12,      -- farm income -- see docs/FARMING.md section 5
