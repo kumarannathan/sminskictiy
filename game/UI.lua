@@ -13,17 +13,38 @@ return function(Config, Models, Audio, ctx)
 	---------------------------------------------------------------------------
 	-- STYLE
 	---------------------------------------------------------------------------
+	-- THE PIXEL PALETTE (docs/PIXEL_UI.md section 2).
+	--
+	-- Every intent hue is a PAIR: the light value is the button face, the dark
+	-- value is the 8px body underneath it. That pairing is what makes a
+	-- control read as a physical key rather than a coloured rectangle, and it
+	-- is why `mintDark` stopped being a one-off and became the shape every
+	-- colour follows.
+	--
+	-- WHITE LABELS ON LIGHT FACES FAIL CONTRAST, AND THAT IS HANDLED
+	-- ELSEWHERE. White on `mint` is about 2.4:1. The fix is NOT to darken the
+	-- faces -- that kills the palette -- it is the 4px ink outline every
+	-- button label carries (see `button` below), which is how pixel UI has
+	-- always solved this.
+	--
+	-- The old key names all survive, so nothing written before today moves.
 	local C = {
-		paper = Color3.fromRGB(252, 248, 238),
-		paper2 = Color3.fromRGB(242, 236, 220),
-		ink = Color3.fromRGB(58, 62, 50),
-		inkSoft = Color3.fromRGB(128, 128, 112),
-		mint = Color3.fromRGB(150, 205, 140),
-		mintDark = Color3.fromRGB(98, 150, 90),
-		coral = Color3.fromRGB(255, 125, 110),
-		gold = Color3.fromRGB(245, 196, 80),
-		sky = Color3.fromRGB(140, 190, 240),
-		lav = Color3.fromRGB(190, 165, 240),
+		-- ink
+		ink = Color3.fromRGB(46, 51, 40),
+		inkSoft = Color3.fromRGB(86, 92, 74),
+		inkFaint = Color3.fromRGB(138, 144, 120),
+		-- paper
+		paper = Color3.fromRGB(253, 246, 227),
+		paper2 = Color3.fromRGB(239, 228, 200),
+		paper3 = Color3.fromRGB(223, 207, 168),
+		hi = Color3.fromRGB(255, 253, 244),
+		-- intent, light / dark pairs
+		mint = Color3.fromRGB(143, 208, 122), mintDark = Color3.fromRGB(79, 143, 70),
+		gold = Color3.fromRGB(245, 196, 78), goldDark = Color3.fromRGB(184, 134, 42),
+		coral = Color3.fromRGB(240, 112, 94), coralDark = Color3.fromRGB(168, 63, 48),
+		sky = Color3.fromRGB(111, 178, 232), skyDark = Color3.fromRGB(53, 113, 159),
+		lav = Color3.fromRGB(183, 155, 232), lavDark = Color3.fromRGB(110, 85, 166),
+		rose = Color3.fromRGB(242, 168, 184), roseDark = Color3.fromRGB(196, 103, 124),
 		white = Color3.new(1, 1, 1),
 	}
 	UI.C = C
@@ -66,6 +87,15 @@ return function(Config, Models, Audio, ctx)
 		info = C.sky, -- navigate, map, phone, neutral system
 		special = C.lav, -- work, progression, premium
 		neutral = C.paper2, -- secondary, dismiss, "not now"
+		chrome = C.rose, -- device chrome: the phone's status bar and headers
+		disabled = C.inkFaint, -- label colour on a control that cannot be used
+
+		-- THE DARK HALF OF EVERY INTENT. `body[T.go]` is not expressible in
+		-- Lua (colours are not hashable as table keys usefully), so the pairs
+		-- are named. A button given `color = T.go` finds its body here.
+		body = { go = C.mintDark, money = C.goldDark, alert = C.coralDark,
+			info = C.skyDark, special = C.lavDark, chrome = C.roseDark,
+			neutral = C.paper3 },
 
 		-- TYPE SCALE. Twelve ad-hoc sizes were in use; these are the seven
 		-- steps they collapse to. Nothing new invents an eighth.
@@ -81,7 +111,11 @@ return function(Config, Models, Audio, ctx)
 		-- is already the smallest thing a thumb hits reliably. Nothing
 		-- tappable ships smaller than tap.min.
 		tap = { min = 44, std = 56, wide = 64 },
-		depth = 5, -- how far a button travels when pressed
+		-- 8, NOT 5. The body under a button face is two 4px rows; at 5 it was
+		-- neither one row nor two and never landed on the pixel grid.
+		depth = 8, -- how far a button travels when pressed
+		border = 4, -- ink frame on large parts; small parts use 2
+		shadow = 12, -- drop shadow offset
 	}
 	UI.T = T
 
@@ -162,16 +196,36 @@ return function(Config, Models, Audio, ctx)
 			i.BackgroundTransparency = 1
 			i.Image = id
 			i.ImageColor3 = tint
+			-------------------------------------------------------------
+			-- THE SINGLE MOST IMPORTANT LINE IN THE PIXEL UI.
+			--
+			-- Roblox defaults to bilinear filtering. A 16px glyph blown up
+			-- to 40px comes out soft, and the entire style collapses --
+			-- silently, because it looks correct in the design files and
+			-- only wrong in game. Nothing else here matters if this is
+			-- missing, so when something looks "nearly right but mushy",
+			-- check this first.
+			-------------------------------------------------------------
+			i.ResampleMode = Enum.ResamplerMode.Pixelated
 			i.ScaleType = Enum.ScaleType.Slice
 			i.SliceCenter = Rect.new(a.corner, math.min(a.corner, a.size.Y / 2 - 1), a.size.X - a.corner, math.max(a.size.Y - a.corner, a.size.Y / 2 + 1))
-			i.SliceScale = sliceScale or 0.5
+			-- INTEGER SLICE SCALE. A 1px border in the source at SliceScale
+			-- 4 is a 4px border on screen, which is the token. A fractional
+			-- scale reintroduces exactly the uneven-edge problem that
+			-- quantise() exists to prevent.
+			i.SliceScale = sliceScale or T.border
 			i.Size = UDim2.fromScale(1, 1)
 			i.ZIndex = obj.ZIndex
 			i.Parent = obj
 			return i
 		end
 		local base = img(a.base, obj.BackgroundColor3)
-		img(a.gloss, Color3.new(1, 1, 1))
+		-- GLOSS IS A 3D IDEA AND HAS NO PLACE HERE. The pixel art carries its
+		-- own 1px highlight along the top inside edge, so the separate gloss
+		-- overlay is dropped -- but only when the art says so, by setting
+		-- `gloss = nil`. While an entry still has one, it still renders, so
+		-- the two art sets can coexist during the changeover.
+		if a.gloss then img(a.gloss, Color3.new(1, 1, 1)) end
 		obj:GetPropertyChangedSignal("BackgroundColor3"):Connect(function()
 			base.ImageColor3 = obj.BackgroundColor3
 		end)
@@ -179,11 +233,15 @@ return function(Config, Models, Audio, ctx)
 	end
 	UI.skin = skin
 
-	-- small image icon from the Blender icon set
+	-- small image icon from the pixel icon set
 	local function icon(parent, name, props)
 		local i = Instance.new("ImageLabel")
 		i.BackgroundTransparency = 1
 		i.Image = Art.icons[name] or ""
+		-- same reason as UI.skin: a filtered 16px glyph is a smudge. Every
+		-- icon size in use is a multiple of 4 so they land on whole pixels at
+		-- any quantised scale.
+		i.ResampleMode = Enum.ResamplerMode.Pixelated
 		i.ScaleType = Enum.ScaleType.Fit
 		for k, v in props or {} do i[k] = v end
 		i.Parent = parent
@@ -207,12 +265,28 @@ return function(Config, Models, Audio, ctx)
 		opts = opts or {}
 		local col = opts.color or C.mint
 		local size = opts.size or UDim2.fromOffset(200, 56)
-		local depth = opts.depth or 5
+		local depth = opts.depth or T.depth
 		local kind = opts.pill and "pill" or "key"
 		local faceH = size.Y.Offset > 0 and size.Y.Offset - depth or 50
-		local slice = kind == "pill" and (faceH / 2) / Art.ui.pill.corner or (opts.radius or 16) / Art.ui.key.corner
+		-- INTEGER, NOT DERIVED FROM A RADIUS. This used to compute a
+		-- fractional SliceScale from the corner radius, which put a 3.7px
+		-- border on some buttons and 4px on others. Large parts get 4, small
+		-- ones 2, and both are whole pixels at every quantised canvas scale.
+		local slice = (size.Y.Offset > 0 and size.Y.Offset < T.tap.min) and 2 or T.border
 		local holder = frame(parent, { Size = size, Position = opts.pos or UDim2.new(), AnchorPoint = opts.anchor or Vector2.zero, BackgroundTransparency = 1, LayoutOrder = opts.order or 0 })
-		local base = frame(holder, { Size = UDim2.new(1, 0, 1, -depth), Position = UDim2.fromOffset(0, depth), BackgroundColor3 = col:Lerp(C.ink, 0.4) })
+		-- THE BODY IS A NAMED DARK VALUE WHERE ONE EXISTS. Lerping the face
+		-- toward ink produced a muddy, desaturated under-colour; the palette
+		-- now ships a hand-picked dark for every intent hue (T.body). The
+		-- lerp stays as the fallback for a one-off colour a call site mixed
+		-- itself.
+		local function bodyOf(c)
+			for name, light in { go = C.mint, money = C.gold, alert = C.coral,
+				info = C.sky, special = C.lav, chrome = C.rose, neutral = C.paper2 } do
+				if light == c then return T.body[name] end
+			end
+			return c:Lerp(C.ink, 0.4)
+		end
+		local base = frame(holder, { Size = UDim2.new(1, 0, 1, -depth), Position = UDim2.fromOffset(0, depth), BackgroundColor3 = bodyOf(col) })
 		skin(base, kind, slice)
 		local art = frame(holder, { Size = UDim2.new(1, 0, 1, -depth), BackgroundColor3 = col })
 		skin(art, kind, slice)
@@ -225,10 +299,21 @@ return function(Config, Models, Audio, ctx)
 		face.TextColor3 = opts.textColor or C.white
 		face.Text = label
 		face.BorderSizePixel = 0
+		-- THE OUTLINE IS THE CONTRAST FIX, AND IT IS NOT OPTIONAL.
+		--
+		-- White on the light face of an intent hue is about 2.4:1, which
+		-- fails. Darkening the faces to pass would flatten the whole palette,
+		-- so the label gets a 4px ink outline instead -- which is how pixel
+		-- UI has always solved this, and reads as part of the style rather
+		-- than as an accessibility patch.
+		--
+		-- It used to be 2px of a colour lerped off the face, which is a soft
+		-- halo, not an outline: it lifted the text off light faces barely and
+		-- off dark ones not at all.
 		if (opts.textColor or C.white) == C.white then
 			local ts = Instance.new("UIStroke")
-			ts.Thickness = 2
-			ts.Color = col:Lerp(C.ink, 0.6)
+			ts.Thickness = T.border
+			ts.Color = C.ink
 			ts.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 			ts.Parent = face
 		end
@@ -248,8 +333,8 @@ return function(Config, Models, Audio, ctx)
 			end
 		end
 		face.Parent = holder
-		local sc = Instance.new("UIScale")
-		sc.Parent = holder
+		-- no UIScale here any more: nothing scales a button, so the instance
+		-- was pure cost on every one of the hundreds the HUD builds
 		local enabled = true
 		local baseColor = col
 		face.MouseEnter:Connect(function()
@@ -258,19 +343,29 @@ return function(Config, Models, Audio, ctx)
 		face.MouseLeave:Connect(function()
 			tween(art, 0.15, { BackgroundColor3 = baseColor, Position = UDim2.new() })
 			tween(face, 0.15, { Position = UDim2.new() })
-			tween(sc, 0.15, { Scale = 1 })
 		end)
+		-----------------------------------------------------------------
+		-- THE PRESS TRAVELS THE FULL DEPTH, AND NOTHING SCALES.
+		--
+		-- `depth - 1` left a one-pixel sliver of body showing at the bottom
+		-- of a pressed key, so it never quite looked seated. The face now
+		-- travels the whole 8 and the body collapses under it.
+		--
+		-- The 0.96 UIScale squash is GONE. Scaling pixel art by an arbitrary
+		-- fraction is the same blur that ResampleMode and quantise() exist
+		-- to prevent -- and it was doing it on every single tap, on the one
+		-- control the player looks at most. The travel alone reads as a
+		-- press; the squash was never carrying it.
+		-----------------------------------------------------------------
 		face.MouseButton1Down:Connect(function()
 			if not enabled then return end
-			tween(face, 0.06, { Position = UDim2.fromOffset(0, depth - 1) })
-			tween(art, 0.06, { Position = UDim2.fromOffset(0, depth - 1) })
-			tween(sc, 0.06, { Scale = 0.96 })
+			tween(face, 0.06, { Position = UDim2.fromOffset(0, depth) })
+			tween(art, 0.06, { Position = UDim2.fromOffset(0, depth) })
 			Audio.play("Click", 1.15, 0.8)
 		end)
 		face.MouseButton1Up:Connect(function()
 			tween(face, 0.22, { Position = UDim2.new() }, Enum.EasingStyle.Back)
 			tween(art, 0.22, { Position = UDim2.new() }, Enum.EasingStyle.Back)
-			tween(sc, 0.25, { Scale = 1 }, Enum.EasingStyle.Back)
 		end)
 		face.Activated:Connect(function()
 			if not enabled then
@@ -283,9 +378,14 @@ return function(Config, Models, Audio, ctx)
 		local api = { holder = holder, face = face, art = art }
 		function api.setEnabled(on)
 			enabled = on
-			baseColor = on and col or C.paper2:Lerp(C.inkSoft, 0.35)
+			-- DISABLED IS A PALETTE STATE, NOT A DIMMED COLOUR. paper2 face
+			-- over a paper3 body, label in inkFaint: it still reads as a
+			-- physical key, just an inert one. Lerping the live colour toward
+			-- grey made a muddy version of the enabled button instead.
+			baseColor = on and col or C.paper2
 			art.BackgroundColor3 = baseColor
-			base.BackgroundColor3 = baseColor:Lerp(C.ink, 0.4)
+			base.BackgroundColor3 = on and bodyOf(col) or C.paper3
+			face.TextColor3 = on and (opts.textColor or C.white) or C.inkFaint
 		end
 		function api.setColor(c)
 			col = c
@@ -369,10 +469,28 @@ return function(Config, Models, Audio, ctx)
 	-- Computing the scale from the viewport makes every answer independent of
 	-- callback order. One definition, so the stored scale and the computed one
 	-- cannot disagree.
+	-- PIXEL ART CANNOT BE SCALED BY AN ARBITRARY FLOAT.
+	--
+	-- This used to return whatever the viewport divided to -- 0.6, 0.92, 1.03.
+	-- Multiply a 4px border by 0.92 and you get 3.68 real pixels, which Roblox
+	-- rounds per EDGE: some borders come out 3px and some 4px on the same
+	-- button. That unevenness is exactly what makes pixel art look cheap, and
+	-- no amount of redrawing the art fixes it.
+	--
+	-- Snapping to quarters means 4 * s is always a whole number of real
+	-- pixels, so two borders on one control can never disagree.
+	--
+	-- THE CANVAS NOW JUMPS BETWEEN SIZES AS THE WINDOW RESIZES instead of
+	-- easing. That is correct for pixel art and every pixel game does it --
+	-- it is not a regression to be smoothed back out later.
+	local function quantise(k)
+		return math.max(0.25, math.floor(k * 4 + 0.5) / 4)
+	end
+	UI.quantise = quantise
 	local function canvasScale(v)
-		-- phones: never shrink below 0.6 so buttons stay finger-sized
-		local minS = UIS.TouchEnabled and 0.6 or 0.45
-		return math.clamp(math.min(v.X / 1280, v.Y / 760), minS, 1.25)
+		local minS = 0.5
+		local s = math.clamp(math.min(v.X / 1280, v.Y / 760), minS, 1.5)
+		return quantise(s)
 	end
 	-- the design-pixel canvas for the CURRENT viewport: width, height, scale
 	local function canvas()
@@ -396,7 +514,9 @@ return function(Config, Models, Audio, ctx)
 	function UI.fit(w, h, margin)
 		local cw, ch = canvas()
 		margin = margin or 28
-		return math.min(1, (cw - margin) / w, (ch - margin) / h)
+		-- quantised for the same reason canvasScale is: a card scaled by
+		-- 0.87 has 3.48px borders
+		return quantise(math.min(1, (cw - margin) / w, (ch - margin) / h))
 	end
 	-- FIT A WHOLE PAGE. A page laid out edge-to-edge on the 1280x760 design
 	-- canvas (the home menu) cannot be "fitted" like a card: its pieces are
@@ -413,7 +533,7 @@ return function(Config, Models, Audio, ctx)
 			-- same staleness as UI.fit had; masked today only because this
 			-- handler is connected after rescale's, which is not a guarantee
 			local cw, ch = canvas()
-			local k = math.min(1, cw / designW, ch / designH)
+			local k = quantise(math.min(1, cw / designW, ch / designH))
 			psc.Scale = k
 			f.Size = UDim2.fromOffset(cw / k, ch / k)
 		end
