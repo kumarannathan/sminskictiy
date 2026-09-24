@@ -927,6 +927,92 @@ function Config.Hood(id)
 	return nil
 end
 
+---------------------------------------------------------------------------
+-- CITY TASKS: the answer to "what do I do?", and the reason onboarding does
+-- not end. See docs/ONBOARDING.md section 5.
+--
+-- THE TUTORIAL IS JUST THE FIRST FEW ROWS OF THIS LIST. There is no separate
+-- onboarding system to maintain and drift out of date: a brand new player and
+-- somebody at minute 300 get the same affordance, and the only difference is
+-- which row is at the top.
+--
+-- EVERY TASK CARRIES FOUR THINGS, and that is what makes it teach rather than
+-- nag:
+--   text    what to do
+--   reward  what you get -- coins, and xp
+--   how     the one line that says where or how, in plain words
+--   track   where TRACK sends you (beacon + CityWayfind), or nil
+--
+-- Progress uses the SAME `stat` counters the daily challenges already
+-- increment, so nothing new has to be tallied and a task cannot disagree with
+-- a challenge about how many jobs you have done.
+--
+-- ORDER IS THE TEACHING ORDER. `after` names the task that must be complete
+-- before this one is offered, so the opening sequence is a chain and
+-- everything past it is open. Ids are saved, so they are append-only.
+---------------------------------------------------------------------------
+Config.Tasks = {
+	-- the guided opening (docs/ONBOARDING.md section 4)
+	{ id = "role", text = "Pick where to start", how = "Choose a role",
+		reward = 0, xp = 5, stat = "roleSet", goal = 1 },
+	{ id = "firstcoin", text = "Earn your first coin", how = "Tidy the litter on the pavement",
+		reward = 0, xp = 5, stat = "sweeps", goal = 1, after = "role",
+		track = { kind = "litter" } },
+	{ id = "firstjob", text = "Work your first shift", how = "Your job is marked on the map",
+		reward = 100, xp = 25, stat = "cityJobs", goal = 1, after = "firstcoin",
+		track = { kind = "work" } },
+	{ id = "firstbuy", text = "Spend some of it", how = "Clothes are the cheapest way to change how you look",
+		reward = 0, xp = 15, stat = "cityBuys", goal = 1, after = "firstjob",
+		track = { kind = "shop" } },
+	{ id = "gohome", text = "Go and see where you live", how = "Your flat is marked on the map",
+		reward = 50, xp = 15, stat = "homeVisits", goal = 1, after = "firstbuy",
+		track = { kind = "home" } },
+	{ id = "earn500", text = "Earn 500 coins", how = "Any job in the city counts",
+		reward = 150, xp = 50, stat = "coins", goal = 500, after = "gohome" },
+
+	-- open-ended, offered in any order once the opening is done
+	{ id = "tryjob2", text = "Try a different job", how = "The Job Center lists every one",
+		reward = 200, xp = 40, stat = "cityJobKinds", goal = 2, after = "earn500",
+		track = { kind = "jobcentre" } },
+	{ id = "buycar", text = "Buy your first vehicle", how = "Sminski Motors, east side",
+		reward = 300, xp = 60, stat = "carsOwned", goal = 2, after = "earn500",
+		track = { kind = "dealer" } },
+	{ id = "movehouse", text = "Move somewhere better", how = "A flat of your own beats the starter room",
+		reward = 300, xp = 60, stat = "aptsOwned", goal = 1, after = "earn500" },
+}
+
+-- The opening chain, in order -- the tasks that make up the guided first
+-- fifteen minutes. Anything not in here is open-ended.
+Config.TaskOpening = { "role", "firstcoin", "firstjob", "firstbuy", "gohome", "earn500" }
+
+function Config.Task(id)
+	for _, t in Config.Tasks do
+		if t.id == id then return t end
+	end
+	return nil
+end
+
+-- IS THIS TASK AVAILABLE YET? A task with no `after` is always offered; one
+-- with an `after` waits for that id to be in `done`.
+function Config.TaskReady(task, done)
+	if not task.after then return true end
+	return (done or {})[task.after] == true
+end
+
+-- THE ONE THING TO DO NEXT, or nil when there is nothing left. The goal
+-- widget shows this and it should never be empty while any task remains --
+-- an empty widget is the "what do I do?" problem coming straight back.
+function Config.NextTask(done, stats)
+	done = done or {}
+	stats = stats or {}
+	for _, t in Config.Tasks do
+		if not done[t.id] and Config.TaskReady(t, done) then
+			return t, math.min(stats[t.stat] or 0, t.goal)
+		end
+	end
+	return nil
+end
+
 -- WHAT IS IN THE STARTER FLAT. One room, and every object in it is a verb --
 -- a room you can only look at teaches a new player that rooms are scenery.
 -- No window in v1; the flat is small and interior-lit and does not need one.

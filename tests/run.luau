@@ -124,6 +124,45 @@ ok("a maxed farm stays in the same league", maxFarm < taxiPerMin * 6,
 	("%d vs %d/min -- raise plot cost or lower yield"):format(maxFarm, taxiPerMin))
 
 ---------------------------------------------------------------------------
+section("City tasks")
+---------------------------------------------------------------------------
+-- THE WIDGET MUST NEVER BE EMPTY while work remains (docs/ONBOARDING.md
+-- section 5.1). An empty goal widget is the "what do I do?" problem coming
+-- straight back, so the chain is walked end to end here.
+local seen, done, guard = {}, {}, 0
+local order = {}
+while guard < 100 do
+	guard += 1
+	local t = Config.NextTask(done, {})
+	if not t then break end
+	ok("task " .. t.id .. " not offered twice", not seen[t.id], t.id)
+	seen[t.id] = true
+	table.insert(order, t.id)
+	done[t.id] = true
+end
+ok("every task is reachable", #order == #Config.Tasks,
+	("reached %d of %d -- an `after` probably names a task that never completes"):format(#order, #Config.Tasks))
+
+for i, id in Config.TaskOpening do
+	ok("opening step " .. i .. " is " .. id, order[i] == id,
+		"got " .. tostring(order[i]) .. " -- the guided sequence is out of order")
+end
+
+for _, t in Config.Tasks do
+	ok("task " .. t.id .. " has a stat", type(t.stat) == "string" and #t.stat > 0)
+	ok("task " .. t.id .. " has a goal", (t.goal or 0) > 0)
+	ok("task " .. t.id .. " says how", type(t.how) == "string" and #t.how > 0,
+		"a task without a HOW is a nag, not an instruction")
+	if t.after then
+		ok("task " .. t.id .. " after-id exists", Config.Task(t.after) ~= nil, t.after)
+	end
+end
+
+-- nothing is offered before the role is picked
+local first = Config.NextTask({}, {})
+ok("role comes first", first and first.id == "role")
+
+---------------------------------------------------------------------------
 section("Pixel grid (static, against City.lua source)")
 ---------------------------------------------------------------------------
 -- EVERY HUD DIMENSION IS A MULTIPLE OF 4 (docs/PIXEL_UI.md section 1). With
