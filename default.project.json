@@ -1,0 +1,79 @@
+{
+  "name": "SminskiCity",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "SminskiShared": {
+        "$className": "Folder",
+        "Config":     { "$path": "game/Config.lua" },
+        "Rigs":       { "$path": "game/Rigs.lua" },
+        "Places":     { "$path": "game/Places.lua" },
+        "RigMeshes":  { "$path": "game/RigMeshes.lua" },
+        "Art":        { "$path": "game/Art.lua" },
+        "ParkRules":  { "$path": "game/ParkRules.lua" },
+        "Props":      { "$path": "game/Props.lua" },
+        "PropMeshes": { "$path": "game/PropMeshes.lua" },
+        "Roads":      { "$path": "game/Roads.lua" },
+        "Weather":    { "$path": "game/Weather.lua" }
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "SminskiServer": {
+        "$path": "game/SminskiServer.server.lua",
+        "Matchmaking": { "$path": "game/Matchmaking.lua" },
+        "Survival":    { "$path": "game/Survival.lua" }
+      }
+    },
+
+    "ReplicatedFirst": {
+      "$className": "ReplicatedFirst",
+      "SminskiTitle": { "$path": "game/SminskiTitle.client.lua" }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "SminskiRunner": {
+          "$path": "game/SminskiRunner.client.lua",
+
+          "Models":        { "$path": "game/Models.lua" },
+          "World":         { "$path": "game/World.lua" },
+          "Audio":         { "$path": "game/Audio.lua" },
+          "UI":            { "$path": "game/UI.lua" },
+          "Multiplayer":   { "$path": "game/Multiplayer.lua" },
+          "Hub":           { "$path": "game/Hub.lua" },
+          "HubSets":       { "$path": "game/HubSets.lua" },
+          "HubStreets":    { "$path": "game/HubStreets.lua" },
+          "Garden":        { "$path": "game/Garden.lua" },
+          "Tour":          { "$path": "game/Tour.lua" },
+          "Park":          { "$path": "game/Park.lua" },
+
+          "City":          { "$path": "game/City.lua" },
+          "CityKit":       { "$path": "game/CityKit.lua" },
+          "CityBuild":     { "$path": "game/CityBuild.lua" },
+          "CityMinimap":   { "$path": "game/CityMinimap.lua" },
+          "CityHome":      { "$path": "game/CityHome.lua" },
+          "CityDress":     { "$path": "game/CityDress.lua" },
+          "CityVenues":    { "$path": "game/CityVenues.lua" },
+          "CityGuide":     { "$path": "game/CityGuide.lua" },
+          "CityRoads":     { "$path": "game/CityRoads.lua" },
+          "CityApts":      { "$path": "game/CityApts.lua" },
+          "CityWeather":   { "$path": "game/CityWeather.lua" },
+          "CityWayfind":   { "$path": "game/CityWayfind.lua" },
+          "CityHangouts":  { "$path": "game/CityHangouts.lua" },
+          "CitySound":     { "$path": "game/CitySound.lua" },
+          "CityJobs":      { "$path": "game/CityJobs.lua" },
+          "CityKitchen":   { "$path": "game/CityKitchen.lua" },
+          "CityEvents":    { "$path": "game/CityEvents.lua" },
+          "CityGrocery":   { "$path": "game/CityGrocery.lua" },
+          "CityTycoon":    { "$path": "game/CityTycoon.lua" }
+        }
+      }
+    }
+  }
+}

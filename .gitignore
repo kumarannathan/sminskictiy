@@ -1,0 +1,22 @@
+# Blender working files -- source of truth, but too big for plain git.
+# Keep them, version them with LFS or a separate asset store, not here.
+*.blend1
+*.blend2
+
+# Rendered output: regenerate from art/blender/*.py, don't version.
+art/shots/
+art/preview/
+art/ads/
+art/keyart/
+art/thumbnails/
+art/passes/
+
+# Roblox place file -- binary, merges badly. Version .rbxlx or Rojo instead.
+*.rbxl
+*.rbxm
+
+.DS_Store
+
+# Python bytecode from art/blender tooling
+__pycache__/
+*.pyc

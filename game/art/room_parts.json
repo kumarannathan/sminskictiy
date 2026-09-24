@@ -1,0 +1,940 @@
+{
+ "Bed__Frame": {
+  "joint": "Bed",
+  "size": [
+   170.0,
+   92.9816,
+   210.9816
+  ],
+  "offset": [
+   0.0,
+   46.4908,
+   0.0092
+  ],
+  "tris": 2400
+ },
+ "Bed__Mattress": {
+  "joint": "Bed",
+  "size": [
+   154.0,
+   18.0,
+   200.0
+  ],
+  "offset": [
+   0.0,
+   35.0,
+   -1.0
+  ],
+  "tris": 972
+ },
+ "Bed__Duvet": {
+  "joint": "Bed",
+  "size": [
+   161.7142,
+   18.317,
+   151.9283
+  ],
+  "offset": [
+   0.0,
+   52.6585,
+   -28.8888
+  ],
+  "tris": 3598
+ },
+ "Bed__DuvetFold": {
+  "joint": "Bed",
+  "size": [
+   162.0278,
+   9.0,
+   26.0278
+  ],
+  "offset": [
+   0.0,
+   60.0,
+   34.0
+  ],
+  "tris": 900
+ },
+ "Bed__Pillows": {
+  "joint": "Bed",
+  "size": [
+   138.0225,
+   26.4721,
+   36.4517
+  ],
+  "offset": [
+   0.0,
+   54.0,
+   78.0
+  ],
+  "tris": 1944
+ },
+ "CatPlush__Body": {
+  "joint": "CatPlush",
+  "size": [
+   135.5177,
+   160.678,
+   83.6539
+  ],
+  "offset": [
+   10.5444,
+   80.4305,
+   2.9621
+  ],
+  "tris": 5000
+ },
+ "CatPlush__Belly": {
+  "joint": "CatPlush",
+  "size": [
+   61.9671,
+   123.9991,
+   44.0213
+  ],
+  "offset": [
+   0.0022,
+   79.9996,
+   24.9856
+  ],
+  "tris": 1600
+ },
+ "CatPlush__Face": {
+  "joint": "CatPlush",
+  "size": [
+   42.0395,
+   13.5051,
+   7.4412
+  ],
+  "offset": [
+   -0.027,
+   108.582,
+   41.2572
+  ],
+  "tris": 900
+ },
+ "CatPlush__Nose": {
+  "joint": "CatPlush",
+  "size": [
+   8.0558,
+   4.9927,
+   5.0239
+  ],
+  "offset": [
+   0.0049,
+   106.9993,
+   45.0087
+  ],
+  "tris": 200
+ },
+ "Plushie__Body": {
+  "joint": "Plushie",
+  "size": [
+   35.4984,
+   42.8514,
+   21.8473
+  ],
+  "offset": [
+   -0.0363,
+   21.4402,
+   0.9622
+  ],
+  "tris": 2200
+ },
+ "Plushie__Muzzle": {
+  "joint": "Plushie",
+  "size": [
+   11.9395,
+   25.4964,
+   7.0028
+  ],
+  "offset": [
+   -0.0,
+   18.749,
+   8.9885
+  ],
+  "tris": 500
+ },
+ "Plushie__Face": {
+  "joint": "Plushie",
+  "size": [
+   10.429,
+   4.7932,
+   4.9304
+  ],
+  "offset": [
+   -0.0066,
+   30.7878,
+   11.06
+  ],
+  "tris": 300
+ },
+ "GamingChair__Base": {
+  "joint": "GamingChair",
+  "size": [
+   42.5155,
+   17.9862,
+   44.5492
+  ],
+  "offset": [
+   1.736,
+   9.0001,
+   0.0
+  ],
+  "tris": 2000
+ },
+ "GamingChair__Wheels": {
+  "joint": "GamingChair",
+  "size": [
+   44.832,
+   5.0391,
+   46.8545
+  ],
+  "offset": [
+   2.0872,
+   2.5018,
+   -0.029
+  ],
+  "tris": 800
+ },
+ "GamingChair__Seat": {
+  "joint": "GamingChair",
+  "size": [
+   53.8006,
+   57.8828,
+   49.2381
+  ],
+  "offset": [
+   0.0021,
+   45.9414,
+   -2.6191
+  ],
+  "tris": 3000
+ },
+ "GamingChair__Trim": {
+  "joint": "GamingChair",
+  "size": [
+   29.9856,
+   42.2378,
+   38.6864
+  ],
+  "offset": [
+   0.0,
+   44.8342,
+   0.6415
+  ],
+  "tris": 1200
+ },
+ "GamingChair__Headrest": {
+  "joint": "GamingChair",
+  "size": [
+   25.9744,
+   12.098,
+   8.5914
+  ],
+  "offset": [
+   -0.0128,
+   68.001,
+   -14.9898
+  ],
+  "tris": 600
+ },
+ "GamingChair__Arms": {
+  "joint": "GamingChair",
+  "size": [
+   55.9905,
+   14.4597,
+   23.9905
+  ],
+  "offset": [
+   0.0,
+   28.2451,
+   0.0
+  ],
+  "tris": 800
+ },
+ "GamingDesk__Top": {
+  "joint": "GamingDesk",
+  "size": [
+   229.9764,
+   3.9882,
+   71.9764
+  ],
+  "offset": [
+   0.0,
+   46.0059,
+   0.0
+  ],
+  "tris": 800
+ },
+ "GamingDesk__Legs": {
+  "joint": "GamingDesk",
+  "size": [
+   221.9779,
+   43.9779,
+   64.9779
+  ],
+  "offset": [
+   0.0,
+   22.0,
+   -0.5
+  ],
+  "tris": 1600
+ },
+ "GamingDesk__Mat": {
+  "joint": "GamingDesk",
+  "size": [
+   89.9888,
+   1.3897,
+   55.9888
+  ],
+  "offset": [
+   0.0,
+   48.7,
+   6.0
+  ],
+  "tris": 400
+ },
+ "Monitor__Bezel": {
+  "joint": "Monitor",
+  "size": [
+   65.9808,
+   54.9839,
+   15.984
+  ],
+  "offset": [
+   0.0,
+   27.4985,
+   -2.0
+  ],
+  "tris": 1400
+ },
+ "Monitor__Screen": {
+  "joint": "Monitor",
+  "size": [
+   61.9893,
+   33.9893,
+   0.7893
+  ],
+  "offset": [
+   0.0,
+   36.0,
+   1.7
+  ],
+  "tris": 300
+ },
+ "Monitor__Led": {
+  "joint": "Monitor",
+  "size": [
+   2.9802,
+   0.7793,
+   0.5802
+  ],
+  "offset": [
+   0.0,
+   17.5996,
+   1.6
+  ],
+  "tris": 100
+ },
+ "PCTower__Case": {
+  "joint": "PCTower",
+  "size": [
+   25.9963,
+   56.0,
+   52.0
+  ],
+  "offset": [
+   -0.0018,
+   28.0,
+   0.0
+  ],
+  "tris": 1400
+ },
+ "PCTower__Front": {
+  "joint": "PCTower",
+  "size": [
+   21.9756,
+   51.9756,
+   2.6802
+  ],
+  "offset": [
+   -1.0,
+   28.0,
+   26.3523
+  ],
+  "tris": 600
+ },
+ "PCTower__Glass": {
+  "joint": "PCTower",
+  "size": [
+   0.7908,
+   49.9908,
+   45.9908
+  ],
+  "offset": [
+   12.6,
+   28.0,
+   0.0
+  ],
+  "tris": 200
+ },
+ "PCTower__Fans": {
+  "joint": "PCTower",
+  "size": [
+   2.2034,
+   40.9876,
+   13.0
+  ],
+  "offset": [
+   11.4003,
+   27.9995,
+   -4.0
+  ],
+  "tris": 2400
+ },
+ "PCTower__Strip": {
+  "joint": "PCTower",
+  "size": [
+   0.7893,
+   49.9893,
+   1.5893
+  ],
+  "offset": [
+   12.3,
+   28.0,
+   24.0
+  ],
+  "tris": 200
+ },
+ "Keyboard__Body": {
+  "joint": "Keyboard",
+  "size": [
+   43.9897,
+   1.9897,
+   14.0
+  ],
+  "offset": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "tris": 600
+ },
+ "Keyboard__Keys": {
+  "joint": "Keyboard",
+  "size": [
+   41.1432,
+   1.1432,
+   10.5432
+  ],
+  "offset": [
+   0.0,
+   2.4,
+   0.0
+  ],
+  "tris": 3200
+ },
+ "Keyboard__Glow": {
+  "joint": "Keyboard",
+  "size": [
+   42.3939,
+   0.4939,
+   12.3939
+  ],
+  "offset": [
+   0.0,
+   2.05,
+   0.0
+  ],
+  "tris": 300
+ },
+ "Mouse__Body": {
+  "joint": "Mouse",
+  "size": [
+   7.0,
+   5.1992,
+   10.9907
+  ],
+  "offset": [
+   -0.0,
+   1.6,
+   -0.0
+  ],
+  "tris": 700
+ },
+ "Mouse__Wheel": {
+  "joint": "Mouse",
+  "size": [
+   1.1961,
+   1.5945,
+   1.589
+  ],
+  "offset": [
+   -0.0002,
+   3.6021,
+   2.7993
+  ],
+  "tris": 200
+ },
+ "Nightstand__Body": {
+  "joint": "Nightstand",
+  "size": [
+   46.9633,
+   48.4823,
+   42.9633
+  ],
+  "offset": [
+   0.0,
+   24.2405,
+   0.0
+  ],
+  "tris": 2000
+ },
+ "Nightstand__Drawers": {
+  "joint": "Nightstand",
+  "size": [
+   35.9872,
+   31.9872,
+   1.5882
+  ],
+  "offset": [
+   0.0,
+   27.0,
+   20.6
+  ],
+  "tris": 800
+ },
+ "Nightstand__Knobs": {
+  "joint": "Nightstand",
+  "size": [
+   4.0242,
+   21.9937,
+   3.014
+  ],
+  "offset": [
+   -0.0073,
+   26.9973,
+   22.4945
+  ],
+  "tris": 400
+ },
+ "MoonLamp__Bulb": {
+  "joint": "MoonLamp",
+  "size": [
+   23.8129,
+   24.0504,
+   23.9823
+  ],
+  "offset": [
+   0.0066,
+   18.1603,
+   0.099
+  ],
+  "tris": 2400
+ },
+ "MoonLamp__Base": {
+  "joint": "MoonLamp",
+  "size": [
+   19.0,
+   6.6,
+   19.0
+  ],
+  "offset": [
+   0.0,
+   3.3,
+   0.0
+  ],
+  "tris": 480
+ },
+ "Dresser__Body": {
+  "joint": "Dresser",
+  "size": [
+   113.9633,
+   70.982,
+   36.9633
+  ],
+  "offset": [
+   0.0,
+   35.4907,
+   0.0
+  ],
+  "tris": 2200
+ },
+ "Dresser__Drawers": {
+  "joint": "Dresser",
+  "size": [
+   101.9872,
+   56.9872,
+   1.5756
+  ],
+  "offset": [
+   0.0,
+   36.0,
+   17.6
+  ],
+  "tris": 1800
+ },
+ "Dresser__Handles": {
+  "joint": "Dresser",
+  "size": [
+   60.9692,
+   41.5713,
+   2.1786
+  ],
+  "offset": [
+   -0.0047,
+   35.9963,
+   19.2
+  ],
+  "tris": 900
+ },
+ "Bookcase__Frame": {
+  "joint": "Bookcase",
+  "size": [
+   91.9823,
+   151.9838,
+   29.9823
+  ],
+  "offset": [
+   0.0,
+   75.9993,
+   0.0
+  ],
+  "tris": 2000
+ },
+ "Bookcase__Shelves": {
+  "joint": "Bookcase",
+  "size": [
+   85.9786,
+   117.9786,
+   25.9786
+  ],
+  "offset": [
+   0.0,
+   66.0,
+   0.0
+  ],
+  "tris": 1200
+ },
+ "BeanBag__Body": {
+  "joint": "BeanBag",
+  "size": [
+   59.8029,
+   38.9516,
+   59.7978
+  ],
+  "offset": [
+   -0.0022,
+   19.5002,
+   0.0005
+  ],
+  "tris": 3000
+ },
+ "BeanBag__Tag": {
+  "joint": "BeanBag",
+  "size": [
+   5.7546,
+   3.435,
+   3.0026
+  ],
+  "offset": [
+   17.9988,
+   30.0,
+   22.0
+  ],
+  "tris": 200
+ },
+ "LaundryBasket__Basket": {
+  "joint": "LaundryBasket",
+  "size": [
+   43.9718,
+   42.2033,
+   43.9718
+  ],
+  "offset": [
+   0.0,
+   21.1011,
+   0.0
+  ],
+  "tris": 3600
+ },
+ "LaundryBasket__Clothes": {
+  "joint": "LaundryBasket",
+  "size": [
+   35.6612,
+   16.9478,
+   31.7218
+  ],
+  "offset": [
+   -0.0076,
+   47.4914,
+   0.9748
+  ],
+  "tris": 1800
+ },
+ "LaundryBasket__Sock": {
+  "joint": "LaundryBasket",
+  "size": [
+   12.1787,
+   5.6999,
+   14.1232
+  ],
+  "offset": [
+   -6.0127,
+   53.9923,
+   8.0158
+  ],
+  "tris": 400
+ },
+ "PottedPlant__Pot": {
+  "joint": "PottedPlant",
+  "size": [
+   30.0,
+   32.0,
+   30.0
+  ],
+  "offset": [
+   0.0,
+   16.0,
+   0.0
+  ],
+  "tris": 768
+ },
+ "PottedPlant__Soil": {
+  "joint": "PottedPlant",
+  "size": [
+   25.9274,
+   1.9903,
+   25.9274
+  ],
+  "offset": [
+   0.0,
+   27.5001,
+   0.0
+  ],
+  "tris": 300
+ },
+ "PottedPlant__Stems": {
+  "joint": "PottedPlant",
+  "size": [
+   82.4896,
+   88.7753,
+   55.3579
+  ],
+  "offset": [
+   2.9366,
+   71.1577,
+   -1.1588
+  ],
+  "tris": 1600
+ },
+ "PottedPlant__Leaves": {
+  "joint": "PottedPlant",
+  "size": [
+   101.408,
+   43.8933,
+   78.1337
+  ],
+  "offset": [
+   -7.4686,
+   99.2464,
+   -7.7455
+  ],
+  "tris": 2000
+ },
+ "PottedPlant__LeavesDark": {
+  "joint": "PottedPlant",
+  "size": [
+   113.0554,
+   46.0106,
+   84.5561
+  ],
+  "offset": [
+   9.8682,
+   85.8832,
+   1.3487
+  ],
+  "tris": 2000
+ },
+ "SillPlant__Pot": {
+  "joint": "SillPlant",
+  "size": [
+   10.4,
+   9.8,
+   10.4
+  ],
+  "offset": [
+   0.0,
+   4.9,
+   0.0
+  ],
+  "tris": 512
+ },
+ "SillPlant__Leaves": {
+  "joint": "SillPlant",
+  "size": [
+   10.455,
+   10.2964,
+   11.1311
+  ],
+  "offset": [
+   0.7319,
+   14.2025,
+   -0.0306
+  ],
+  "tris": 1400
+ },
+ "TableLamp__Base": {
+  "joint": "TableLamp",
+  "size": [
+   22.0,
+   4.0,
+   22.0
+  ],
+  "offset": [
+   0.0,
+   2.0,
+   0.0
+  ],
+  "tris": 576
+ },
+ "TableLamp__Arm": {
+  "joint": "TableLamp",
+  "size": [
+   22.5011,
+   111.2497,
+   22.5063
+  ],
+  "offset": [
+   -9.0007,
+   58.6244,
+   -9.0033
+  ],
+  "tris": 1400
+ },
+ "TableLamp__Shade": {
+  "joint": "TableLamp",
+  "size": [
+   36.0,
+   16.8,
+   36.0
+  ],
+  "offset": [
+   -18.0,
+   104.4,
+   -18.0
+  ],
+  "tris": 1536
+ },
+ "TableLamp__Bulb": {
+  "joint": "TableLamp",
+  "size": [
+   8.0468,
+   8.9976,
+   8.0162
+  ],
+  "offset": [
+   -17.9912,
+   103.9998,
+   -17.9917
+  ],
+  "tris": 400
+ },
+ "CeilingLamp__Shade": {
+  "joint": "CeilingLamp",
+  "size": [
+   41.0,
+   14.0,
+   41.0
+  ],
+  "offset": [
+   0.0,
+   11.0,
+   0.0
+  ],
+  "tris": 1596
+ },
+ "CeilingLamp__Bulb": {
+  "joint": "CeilingLamp",
+  "size": [
+   17.9878,
+   6.9961,
+   17.9965
+  ],
+  "offset": [
+   0.0053,
+   6.0091,
+   0.0062
+  ],
+  "tris": 400
+ },
+ "Curtain__Cloth": {
+  "joint": "Curtain",
+  "size": [
+   20.7718,
+   146.0057,
+   7.1868
+  ],
+  "offset": [
+   -0.0012,
+   73.0001,
+   -0.0024
+  ],
+  "tris": 2600
+ },
+ "Curtain__Rings": {
+  "joint": "Curtain",
+  "size": [
+   19.4844,
+   3.5325,
+   0.7282
+  ],
+  "offset": [
+   -0.001,
+   147.5006,
+   0.0007
+  ],
+  "tris": 998
+ },
+ "SodaCan__Can": {
+  "joint": "SodaCan",
+  "size": [
+   7.0,
+   11.2,
+   7.0
+  ],
+  "offset": [
+   0.0,
+   5.6,
+   0.0
+  ],
+  "tris": 400
+ },
+ "SodaCan__Top": {
+  "joint": "SodaCan",
+  "size": [
+   6.2,
+   1.0477,
+   6.2
+  ],
+  "offset": [
+   0.0,
+   11.7239,
+   0.0
+  ],
+  "tris": 600
+ },
+ "SodaCan__Label": {
+  "joint": "SodaCan",
+  "size": [
+   7.05,
+   5.5,
+   7.05
+  ],
+  "offset": [
+   0.0,
+   5.5,
+   0.0
+  ],
+  "tris": 188
+ }
+}

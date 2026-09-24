@@ -1,0 +1,604 @@
+{
+ "ToyBlock__Body": {
+  "joint": "ToyBlock",
+  "size": [
+   4.2,
+   4.2,
+   4.2
+  ],
+  "offset": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "tris": 972
+ },
+ "ToyBlock__Panels": {
+  "joint": "ToyBlock",
+  "size": [
+   4.3355,
+   3.7167,
+   4.3354
+  ],
+  "offset": [
+   0.0,
+   0.3094,
+   -0.0
+  ],
+  "tris": 1600
+ },
+ "ToyBlock__Letters": {
+  "joint": "ToyBlock",
+  "size": [
+   4.775,
+   1.998,
+   4.8502
+  ],
+  "offset": [
+   -0.0375,
+   0.051,
+   -0.0001
+  ],
+  "tris": 2400
+ },
+ "BookStack__Cover1": {
+  "joint": "BookStack",
+  "size": [
+   5.4121,
+   1.9949,
+   4.662
+  ],
+  "offset": [
+   0.0,
+   1.0,
+   0.0
+  ],
+  "tris": 600
+ },
+ "BookStack__Cover2": {
+  "joint": "BookStack",
+  "size": [
+   5.1094,
+   2.1974,
+   4.3932
+  ],
+  "offset": [
+   0.0,
+   3.2013,
+   0.0
+  ],
+  "tris": 600
+ },
+ "BookStack__Cover3": {
+  "joint": "BookStack",
+  "size": [
+   5.4477,
+   1.7948,
+   4.7672
+  ],
+  "offset": [
+   0.0,
+   5.0,
+   0.0
+  ],
+  "tris": 600
+ },
+ "BookStack__Cover4": {
+  "joint": "BookStack",
+  "size": [
+   4.5379,
+   2.3,
+   3.7804
+  ],
+  "offset": [
+   0.0,
+   7.35,
+   0.0
+  ],
+  "tris": 600
+ },
+ "BookStack__Pages": {
+  "joint": "BookStack",
+  "size": [
+   5.1441,
+   8.0463,
+   4.6762
+  ],
+  "offset": [
+   0.2,
+   4.25,
+   0.0
+  ],
+  "tris": 1200
+ },
+ "Pencil__Body": {
+  "joint": "Pencil",
+  "size": [
+   7.44,
+   1.5025,
+   1.3856
+  ],
+  "offset": [
+   -0.4,
+   0.0,
+   0.0
+  ],
+  "tris": 600
+ },
+ "Pencil__Band": {
+  "joint": "Pencil",
+  "size": [
+   0.9001,
+   1.6547,
+   1.6547
+  ],
+  "offset": [
+   -4.55,
+   0.0,
+   0.0
+  ],
+  "tris": 600
+ },
+ "Pencil__Eraser": {
+  "joint": "Pencil",
+  "size": [
+   1.2001,
+   1.5504,
+   1.55
+  ],
+  "offset": [
+   -5.5,
+   0.0,
+   0.0
+  ],
+  "tris": 600
+ },
+ "Pencil__Wood": {
+  "joint": "Pencil",
+  "size": [
+   2.25,
+   1.6,
+   1.6
+  ],
+  "offset": [
+   4.075,
+   0.0,
+   0.0
+  ],
+  "tris": 192
+ },
+ "Pencil__Lead": {
+  "joint": "Pencil",
+  "size": [
+   0.75,
+   0.5,
+   0.5
+  ],
+  "offset": [
+   4.975,
+   0.0,
+   0.0
+  ],
+  "tris": 96
+ },
+ "ToyTrain__Body": {
+  "joint": "ToyTrain",
+  "size": [
+   4.9999,
+   4.5951,
+   8.5999
+  ],
+  "offset": [
+   0.0,
+   3.3975,
+   0.0001
+  ],
+  "tris": 2200
+ },
+ "ToyTrain__Cabin": {
+  "joint": "ToyTrain",
+  "size": [
+   4.7912,
+   3.1912,
+   3.1912
+  ],
+  "offset": [
+   0.0,
+   5.3,
+   -2.5
+  ],
+  "tris": 800
+ },
+ "ToyTrain__Roof": {
+  "joint": "ToyTrain",
+  "size": [
+   5.4022,
+   0.5959,
+   3.8019
+  ],
+  "offset": [
+   0.0,
+   7.05,
+   -2.5
+  ],
+  "tris": 500
+ },
+ "ToyTrain__Chimney": {
+  "joint": "ToyTrain",
+  "size": [
+   1.5915,
+   1.9503,
+   1.5922
+  ],
+  "offset": [
+   0.0,
+   6.575,
+   2.4002
+  ],
+  "tris": 600
+ },
+ "ToyTrain__Wheels": {
+  "joint": "ToyTrain",
+  "size": [
+   5.8003,
+   2.1927,
+   7.7918
+  ],
+  "offset": [
+   0.0,
+   1.1,
+   -0.0004
+  ],
+  "tris": 1998
+ },
+ "ToyTrain__Hubs": {
+  "joint": "ToyTrain",
+  "size": [
+   6.2043,
+   0.9016,
+   6.5024
+  ],
+  "offset": [
+   -0.0021,
+   1.1,
+   -0.0005
+  ],
+  "tris": 900
+ },
+ "ToyTrain__Bumper": {
+  "joint": "ToyTrain",
+  "size": [
+   5.1953,
+   0.8953,
+   0.5909
+  ],
+  "offset": [
+   0.0,
+   1.5,
+   4.45
+  ],
+  "tris": 300
+ },
+ "RubberDuck__Body": {
+  "joint": "RubberDuck",
+  "size": [
+   5.3739,
+   6.0923,
+   7.4927
+  ],
+  "offset": [
+   -0.0,
+   3.0479,
+   -0.6515
+  ],
+  "tris": 2400
+ },
+ "RubberDuck__Beak": {
+  "joint": "RubberDuck",
+  "size": [
+   1.8996,
+   0.7998,
+   1.6996
+  ],
+  "offset": [
+   -0.0006,
+   4.0,
+   3.1
+  ],
+  "tris": 400
+ },
+ "RubberDuck__Eyes": {
+  "joint": "RubberDuck",
+  "size": [
+   2.056,
+   0.5997,
+   0.2965
+  ],
+  "offset": [
+   0.0011,
+   4.8,
+   2.849
+  ],
+  "tris": 300
+ },
+ "Sneaker__Upper": {
+  "joint": "Sneaker",
+  "size": [
+   5.3977,
+   5.8816,
+   10.2831
+  ],
+  "offset": [
+   0.0,
+   3.7458,
+   0.7421
+  ],
+  "tris": 2400
+ },
+ "Sneaker__Sole": {
+  "joint": "Sneaker",
+  "size": [
+   5.8055,
+   1.3,
+   11.4046
+  ],
+  "offset": [
+   0.0,
+   0.65,
+   0.2
+  ],
+  "tris": 800
+ },
+ "Sneaker__Stripe": {
+  "joint": "Sneaker",
+  "size": [
+   5.4948,
+   0.7948,
+   9.5948
+  ],
+  "offset": [
+   0.0,
+   1.55,
+   0.1
+  ],
+  "tris": 500
+ },
+ "Sneaker__Laces": {
+  "joint": "Sneaker",
+  "size": [
+   2.3993,
+   1.1799,
+   2.3946
+  ],
+  "offset": [
+   0.0003,
+   4.0522,
+   2.1
+  ],
+  "tris": 500
+ },
+ "DogBowl__Bowl": {
+  "joint": "DogBowl",
+  "size": [
+   5.5,
+   3.0,
+   5.5
+  ],
+  "offset": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "tris": 896
+ },
+ "DogBowl__Kibble": {
+  "joint": "DogBowl",
+  "size": [
+   2.323,
+   0.8,
+   3.5676
+  ],
+  "offset": [
+   0.0932,
+   0.2205,
+   -0.0283
+  ],
+  "tris": 1500
+ },
+ "ParkBin__Can": {
+  "joint": "ParkBin",
+  "size": [
+   6.2,
+   8.4,
+   6.2
+  ],
+  "offset": [
+   0.0,
+   -1.05,
+   0.0
+  ],
+  "tris": 560
+ },
+ "ParkBin__Lid": {
+  "joint": "ParkBin",
+  "size": [
+   6.6,
+   2.0,
+   6.6
+  ],
+  "offset": [
+   0.0,
+   4.1,
+   0.0
+  ],
+  "tris": 560
+ },
+ "ParkBin__Bands": {
+  "joint": "ParkBin",
+  "size": [
+   6.2844,
+   3.7975,
+   6.2844
+  ],
+  "offset": [
+   -0.0046,
+   -0.8494,
+   -0.0046
+  ],
+  "tris": 800
+ },
+ "ParkBench__Planks": {
+  "joint": "ParkBench",
+  "size": [
+   15.5976,
+   3.9224,
+   5.0222
+  ],
+  "offset": [
+   0.0,
+   5.239,
+   -0.4888
+  ],
+  "tris": 2000
+ },
+ "ParkBench__Frame": {
+  "joint": "ParkBench",
+  "size": [
+   13.3939,
+   6.794,
+   4.9936
+  ],
+  "offset": [
+   0.0,
+   3.4,
+   -0.4002
+  ],
+  "tris": 1598
+ },
+ "ParkTree__Trunk": {
+  "joint": "ParkTree",
+  "size": [
+   13.2653,
+   25.8443,
+   7.8943
+  ],
+  "offset": [
+   0.0426,
+   -10.6777,
+   0.0001
+  ],
+  "tris": 1600
+ },
+ "ParkTree__Canopy": {
+  "joint": "ParkTree",
+  "size": [
+   39.778,
+   27.8111,
+   39.733
+  ],
+  "offset": [
+   -0.0014,
+   8.9785,
+   0.0164
+  ],
+  "tris": 3800
+ },
+ "FloorLamp__Base": {
+  "joint": "FloorLamp",
+  "size": [
+   15.6,
+   2.5,
+   15.6
+  ],
+  "offset": [
+   0.0,
+   -27.05,
+   0.0
+  ],
+  "tris": 480
+ },
+ "FloorLamp__Pole": {
+  "joint": "FloorLamp",
+  "size": [
+   1.1058,
+   40.0006,
+   1.1058
+  ],
+  "offset": [
+   0.0,
+   -6.5002,
+   0.0
+  ],
+  "tris": 300
+ },
+ "FloorLamp__Shade": {
+  "joint": "FloorLamp",
+  "size": [
+   18.0,
+   14.4,
+   18.0
+  ],
+  "offset": [
+   0.0,
+   21.0,
+   0.0
+  ],
+  "tris": 896
+ },
+ "FloorLamp__Bulb": {
+  "joint": "FloorLamp",
+  "size": [
+   4.1847,
+   4.9986,
+   4.2033
+  ],
+  "offset": [
+   0.0075,
+   17.5003,
+   -0.008
+  ],
+  "tris": 400
+ },
+ "Sofa__Frame": {
+  "joint": "Sofa",
+  "size": [
+   6.1997,
+   4.9937,
+   16.1999
+  ],
+  "offset": [
+   -0.1001,
+   0.9969,
+   -0.0
+  ],
+  "tris": 3000
+ },
+ "Sofa__Cushions": {
+  "joint": "Sofa",
+  "size": [
+   4.6046,
+   1.1959,
+   14.8051
+  ],
+  "offset": [
+   0.6,
+   1.102,
+   -0.0002
+  ],
+  "tris": 1800
+ },
+ "Sofa__Legs": {
+  "joint": "Sofa",
+  "size": [
+   5.5059,
+   0.9989,
+   14.8997
+  ],
+  "offset": [
+   0.0998,
+   -1.8998,
+   0.0
+  ],
+  "tris": 400
+ }
+}

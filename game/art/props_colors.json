@@ -1,0 +1,347 @@
+{
+ "ToyBlock__Body": {
+  "color": [
+   255,
+   120,
+   105
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyBlock__Panels": {
+  "color": [
+   255,
+   244,
+   215
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyBlock__Letters": {
+  "color": [
+   255,
+   120,
+   105
+  ],
+  "material": "SmoothPlastic",
+  "tint": "Body"
+ },
+ "BookStack__Cover1": {
+  "color": [
+   110,
+   170,
+   240
+  ],
+  "material": "SmoothPlastic"
+ },
+ "BookStack__Cover2": {
+  "color": [
+   255,
+   125,
+   110
+  ],
+  "material": "SmoothPlastic"
+ },
+ "BookStack__Cover3": {
+  "color": [
+   150,
+   205,
+   140
+  ],
+  "material": "SmoothPlastic"
+ },
+ "BookStack__Cover4": {
+  "color": [
+   185,
+   160,
+   240
+  ],
+  "material": "SmoothPlastic"
+ },
+ "BookStack__Pages": {
+  "color": [
+   252,
+   246,
+   228
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Pencil__Body": {
+  "color": [
+   255,
+   205,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Pencil__Band": {
+  "color": [
+   200,
+   205,
+   215
+  ],
+  "material": "Metal"
+ },
+ "Pencil__Eraser": {
+  "color": [
+   255,
+   150,
+   170
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Pencil__Wood": {
+  "color": [
+   240,
+   205,
+   160
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Pencil__Lead": {
+  "color": [
+   60,
+   60,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyTrain__Body": {
+  "color": [
+   235,
+   85,
+   85
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyTrain__Cabin": {
+  "color": [
+   110,
+   170,
+   240
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyTrain__Roof": {
+  "color": [
+   255,
+   205,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyTrain__Chimney": {
+  "color": [
+   60,
+   55,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyTrain__Wheels": {
+  "color": [
+   55,
+   50,
+   65
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ToyTrain__Hubs": {
+  "color": [
+   255,
+   205,
+   70
+  ],
+  "material": "Metal"
+ },
+ "ToyTrain__Bumper": {
+  "color": [
+   255,
+   205,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "RubberDuck__Body": {
+  "color": [
+   255,
+   215,
+   60
+  ],
+  "material": "SmoothPlastic"
+ },
+ "RubberDuck__Beak": {
+  "color": [
+   255,
+   140,
+   60
+  ],
+  "material": "SmoothPlastic"
+ },
+ "RubberDuck__Eyes": {
+  "color": [
+   40,
+   35,
+   45
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Sneaker__Upper": {
+  "color": [
+   252,
+   252,
+   255
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Sneaker__Sole": {
+  "color": [
+   236,
+   236,
+   242
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Sneaker__Stripe": {
+  "color": [
+   235,
+   85,
+   85
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Sneaker__Laces": {
+  "color": [
+   240,
+   240,
+   245
+  ],
+  "material": "SmoothPlastic"
+ },
+ "DogBowl__Bowl": {
+  "color": [
+   235,
+   90,
+   90
+  ],
+  "material": "SmoothPlastic"
+ },
+ "DogBowl__Kibble": {
+  "color": [
+   170,
+   110,
+   60
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ParkBin__Can": {
+  "color": [
+   90,
+   160,
+   110
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ParkBin__Lid": {
+  "color": [
+   60,
+   120,
+   80
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ParkBin__Bands": {
+  "color": [
+   60,
+   120,
+   80
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ParkBench__Planks": {
+  "color": [
+   200,
+   140,
+   85
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ParkBench__Frame": {
+  "color": [
+   60,
+   60,
+   75
+  ],
+  "material": "Metal"
+ },
+ "ParkTree__Trunk": {
+  "color": [
+   135,
+   95,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "ParkTree__Canopy": {
+  "color": [
+   120,
+   200,
+   100
+  ],
+  "material": "SmoothPlastic"
+ },
+ "FloorLamp__Base": {
+  "color": [
+   70,
+   60,
+   80
+  ],
+  "material": "Metal"
+ },
+ "FloorLamp__Pole": {
+  "color": [
+   200,
+   190,
+   170
+  ],
+  "material": "Metal"
+ },
+ "FloorLamp__Shade": {
+  "color": [
+   255,
+   230,
+   190
+  ],
+  "material": "SmoothPlastic"
+ },
+ "FloorLamp__Bulb": {
+  "color": [
+   255,
+   220,
+   160
+  ],
+  "material": "Neon"
+ },
+ "Sofa__Frame": {
+  "color": [
+   150,
+   120,
+   205
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Sofa__Cushions": {
+  "color": [
+   185,
+   160,
+   240
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Sofa__Legs": {
+  "color": [
+   90,
+   70,
+   60
+  ],
+  "material": "SmoothPlastic"
+ }
+}

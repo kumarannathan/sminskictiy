@@ -1,0 +1,540 @@
+{
+ "Bed__Frame": {
+  "color": [
+   165,
+   118,
+   82
+  ],
+  "material": "Wood"
+ },
+ "Bed__Mattress": {
+  "color": [
+   252,
+   248,
+   244
+  ],
+  "material": "Fabric"
+ },
+ "Bed__Duvet": {
+  "color": [
+   220,
+   190,
+   210
+  ],
+  "material": "Fabric"
+ },
+ "Bed__DuvetFold": {
+  "color": [
+   240,
+   215,
+   230
+  ],
+  "material": "Fabric"
+ },
+ "Bed__Pillows": {
+  "color": [
+   255,
+   250,
+   250
+  ],
+  "material": "Fabric"
+ },
+ "CatPlush__Body": {
+  "color": [
+   90,
+   105,
+   140
+  ],
+  "material": "Fabric"
+ },
+ "CatPlush__Belly": {
+  "color": [
+   235,
+   225,
+   205
+  ],
+  "material": "Fabric"
+ },
+ "CatPlush__Face": {
+  "color": [
+   35,
+   30,
+   45
+  ],
+  "material": "SmoothPlastic"
+ },
+ "CatPlush__Nose": {
+  "color": [
+   240,
+   150,
+   170
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Plushie__Body": {
+  "color": [
+   255,
+   205,
+   80
+  ],
+  "material": "Fabric"
+ },
+ "Plushie__Muzzle": {
+  "color": [
+   255,
+   240,
+   215
+  ],
+  "material": "Fabric"
+ },
+ "Plushie__Face": {
+  "color": [
+   35,
+   30,
+   45
+  ],
+  "material": "SmoothPlastic"
+ },
+ "GamingChair__Base": {
+  "color": [
+   55,
+   55,
+   68
+  ],
+  "material": "Metal"
+ },
+ "GamingChair__Wheels": {
+  "color": [
+   30,
+   30,
+   38
+  ],
+  "material": "SmoothPlastic"
+ },
+ "GamingChair__Seat": {
+  "color": [
+   150,
+   125,
+   220
+  ],
+  "material": "Fabric"
+ },
+ "GamingChair__Trim": {
+  "color": [
+   70,
+   60,
+   110
+  ],
+  "material": "Fabric"
+ },
+ "GamingChair__Headrest": {
+  "color": [
+   70,
+   60,
+   110
+  ],
+  "material": "Fabric"
+ },
+ "GamingChair__Arms": {
+  "color": [
+   40,
+   40,
+   50
+  ],
+  "material": "SmoothPlastic"
+ },
+ "GamingDesk__Top": {
+  "color": [
+   248,
+   248,
+   252
+  ],
+  "material": "SmoothPlastic"
+ },
+ "GamingDesk__Legs": {
+  "color": [
+   235,
+   235,
+   242
+  ],
+  "material": "SmoothPlastic"
+ },
+ "GamingDesk__Mat": {
+  "color": [
+   60,
+   50,
+   90
+  ],
+  "material": "Fabric"
+ },
+ "Monitor__Bezel": {
+  "color": [
+   30,
+   30,
+   38
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Monitor__Screen": {
+  "color": [
+   80,
+   90,
+   200
+  ],
+  "material": "Neon"
+ },
+ "Monitor__Led": {
+  "color": [
+   120,
+   230,
+   255
+  ],
+  "material": "Neon"
+ },
+ "PCTower__Case": {
+  "color": [
+   25,
+   25,
+   32
+  ],
+  "material": "SmoothPlastic"
+ },
+ "PCTower__Front": {
+  "color": [
+   50,
+   50,
+   62
+  ],
+  "material": "SmoothPlastic"
+ },
+ "PCTower__Glass": {
+  "color": [
+   160,
+   100,
+   255
+  ],
+  "material": "Glass",
+  "transparency": 0.45
+ },
+ "PCTower__Fans": {
+  "color": [
+   120,
+   230,
+   255
+  ],
+  "material": "Neon"
+ },
+ "PCTower__Strip": {
+  "color": [
+   255,
+   120,
+   220
+  ],
+  "material": "Neon"
+ },
+ "Keyboard__Body": {
+  "color": [
+   30,
+   30,
+   38
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Keyboard__Keys": {
+  "color": [
+   50,
+   50,
+   62
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Keyboard__Glow": {
+  "color": [
+   190,
+   120,
+   255
+  ],
+  "material": "Neon",
+  "transparency": 0.3
+ },
+ "Mouse__Body": {
+  "color": [
+   30,
+   30,
+   38
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Mouse__Wheel": {
+  "color": [
+   190,
+   120,
+   255
+  ],
+  "material": "Neon"
+ },
+ "Nightstand__Body": {
+  "color": [
+   165,
+   118,
+   82
+  ],
+  "material": "Wood"
+ },
+ "Nightstand__Drawers": {
+  "color": [
+   150,
+   105,
+   72
+  ],
+  "material": "Wood"
+ },
+ "Nightstand__Knobs": {
+  "color": [
+   200,
+   170,
+   110
+  ],
+  "material": "Metal"
+ },
+ "MoonLamp__Bulb": {
+  "color": [
+   255,
+   240,
+   210
+  ],
+  "material": "Neon"
+ },
+ "MoonLamp__Base": {
+  "color": [
+   70,
+   45,
+   32
+  ],
+  "material": "Wood"
+ },
+ "Dresser__Body": {
+  "color": [
+   245,
+   240,
+   235
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Dresser__Drawers": {
+  "color": [
+   235,
+   228,
+   222
+  ],
+  "material": "SmoothPlastic"
+ },
+ "Dresser__Handles": {
+  "color": [
+   200,
+   170,
+   110
+  ],
+  "material": "Metal"
+ },
+ "Bookcase__Frame": {
+  "color": [
+   165,
+   118,
+   82
+  ],
+  "material": "Wood"
+ },
+ "Bookcase__Shelves": {
+  "color": [
+   150,
+   105,
+   72
+  ],
+  "material": "Wood"
+ },
+ "BeanBag__Body": {
+  "color": [
+   255,
+   170,
+   120
+  ],
+  "material": "Fabric"
+ },
+ "BeanBag__Tag": {
+  "color": [
+   255,
+   250,
+   245
+  ],
+  "material": "Fabric"
+ },
+ "LaundryBasket__Basket": {
+  "color": [
+   220,
+   200,
+   170
+  ],
+  "material": "Fabric"
+ },
+ "LaundryBasket__Clothes": {
+  "color": [
+   140,
+   190,
+   240
+  ],
+  "material": "Fabric"
+ },
+ "LaundryBasket__Sock": {
+  "color": [
+   255,
+   170,
+   190
+  ],
+  "material": "Fabric"
+ },
+ "PottedPlant__Pot": {
+  "color": [
+   245,
+   240,
+   235
+  ],
+  "material": "SmoothPlastic"
+ },
+ "PottedPlant__Soil": {
+  "color": [
+   70,
+   50,
+   40
+  ],
+  "material": "Ground"
+ },
+ "PottedPlant__Stems": {
+  "color": [
+   80,
+   130,
+   70
+  ],
+  "material": "SmoothPlastic"
+ },
+ "PottedPlant__Leaves": {
+  "color": [
+   100,
+   175,
+   90
+  ],
+  "material": "SmoothPlastic"
+ },
+ "PottedPlant__LeavesDark": {
+  "color": [
+   70,
+   140,
+   75
+  ],
+  "material": "SmoothPlastic"
+ },
+ "SillPlant__Pot": {
+  "color": [
+   245,
+   240,
+   235
+  ],
+  "material": "SmoothPlastic"
+ },
+ "SillPlant__Leaves": {
+  "color": [
+   110,
+   185,
+   95
+  ],
+  "material": "Grass"
+ },
+ "TableLamp__Base": {
+  "color": [
+   240,
+   235,
+   230
+  ],
+  "material": "SmoothPlastic"
+ },
+ "TableLamp__Arm": {
+  "color": [
+   240,
+   235,
+   230
+  ],
+  "material": "SmoothPlastic"
+ },
+ "TableLamp__Shade": {
+  "color": [
+   255,
+   235,
+   200
+  ],
+  "material": "SmoothPlastic"
+ },
+ "TableLamp__Bulb": {
+  "color": [
+   255,
+   225,
+   170
+  ],
+  "material": "Neon"
+ },
+ "CeilingLamp__Shade": {
+  "color": [
+   255,
+   240,
+   215
+  ],
+  "material": "SmoothPlastic"
+ },
+ "CeilingLamp__Bulb": {
+  "color": [
+   255,
+   235,
+   200
+  ],
+  "material": "Neon"
+ },
+ "Curtain__Cloth": {
+  "color": [
+   165,
+   125,
+   185
+  ],
+  "material": "Fabric"
+ },
+ "Curtain__Rings": {
+  "color": [
+   200,
+   170,
+   110
+  ],
+  "material": "Metal"
+ },
+ "SodaCan__Can": {
+  "color": [
+   235,
+   90,
+   90
+  ],
+  "material": "SmoothPlastic"
+ },
+ "SodaCan__Top": {
+  "color": [
+   205,
+   205,
+   215
+  ],
+  "material": "Metal"
+ },
+ "SodaCan__Label": {
+  "color": [
+   250,
+   245,
+   240
+  ],
+  "material": "SmoothPlastic"
+ }
+}

@@ -1,0 +1,13 @@
+# Toolchain for Sminski City. Installed per-project so a new machine gets the
+# same versions: run `aftman install` in this directory.
+#
+# rojo  builds game/ into a .rbxl without Studio, and syncs into Studio when
+#       it is open. Replaces the HTTP loop in game/_sr_sync.lua.
+#
+# lune is NOT listed here: aftman wants an interactive trust prompt the first
+# time it sees a tool, which a non-interactive shell cannot answer. Install it
+# with `brew install lune`. It is a standalone Luau runtime with a roblox file
+# library, and it can READ a .rbxl -- see tools/dump_place.luau, which is how
+# source is recovered when a place file has got ahead of this repo.
+[tools]
+rojo = "rojo-rbx/rojo@7.7.0"
