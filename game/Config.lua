@@ -956,33 +956,41 @@ Config.Tasks = {
 	{ id = "role", text = "Pick where to start", how = "Choose a role",
 		reward = 0, xp = 5, stat = "roleSet", goal = 1 },
 	{ id = "firstcoin", text = "Earn your first coin", how = "Tidy the litter on the pavement",
-		reward = 0, xp = 5, stat = "sweeps", goal = 1, after = "role",
+		reward = 0, xp = 5, stat = "Sweeps", goal = 1, after = "role",
 		track = { kind = "litter" } },
 	{ id = "firstjob", text = "Work your first shift", how = "Your job is marked on the map",
-		reward = 100, xp = 25, stat = "cityJobs", goal = 1, after = "firstcoin",
+		reward = 100, xp = 25, stat = "JobTasks", goal = 1, after = "firstcoin",
 		track = { kind = "work" } },
 	{ id = "firstbuy", text = "Spend some of it", how = "Clothes are the cheapest way to change how you look",
 		reward = 0, xp = 15, stat = "cityBuys", goal = 1, after = "firstjob",
 		track = { kind = "shop" } },
-	{ id = "gohome", text = "Go and see where you live", how = "Your flat is marked on the map",
-		reward = 50, xp = 15, stat = "homeVisits", goal = 1, after = "firstbuy",
+	{ id = "gohome", text = "Sleep at home", how = "A night in your own bed pays once a day",
+		reward = 50, xp = 15, stat = "HomeNaps", goal = 1, after = "firstbuy",
 		track = { kind = "home" } },
 	{ id = "earn500", text = "Earn 500 coins", how = "Any job in the city counts",
-		reward = 150, xp = 50, stat = "coins", goal = 500, after = "gohome" },
+		reward = 150, xp = 50, stat = "TotalCoins", goal = 500, after = "gohome" },
 
-	-- open-ended, offered in any order once the opening is done
-	{ id = "tryjob2", text = "Try a different job", how = "The Job Center lists every one",
-		reward = 200, xp = 40, stat = "cityJobKinds", goal = 2, after = "earn500",
+	-- open-ended, offered once the opening is done
+	{ id = "fiveshifts", text = "Work five shifts", how = "Any job -- the Job Center lists them all",
+		reward = 200, xp = 40, stat = "JobTasks", goal = 5, after = "earn500",
 		track = { kind = "jobcentre" } },
 	{ id = "buycar", text = "Buy your first vehicle", how = "Sminski Motors, east side",
 		reward = 300, xp = 60, stat = "carsOwned", goal = 2, after = "earn500",
 		track = { kind = "dealer" } },
 	{ id = "movehouse", text = "Move somewhere better", how = "A flat of your own beats the starter room",
 		reward = 300, xp = 60, stat = "aptsOwned", goal = 1, after = "earn500" },
+	{ id = "sellcrops", text = "Sell a crate of produce", how = "Grow it, then take it to a grocery",
+		reward = 150, xp = 40, stat = "cropsSold", goal = 10, after = "earn500",
+		track = { kind = "farm" } },
 }
 
--- The opening chain, in order -- the tasks that make up the guided first
--- fifteen minutes. Anything not in here is open-ended.
+-- STATS THAT ARE A STATE, NOT AN EVENT. Everything else counts something
+-- that happened and is accumulated by bump(); these three are answers to
+-- "how many do you have right now", so the server derives them at read time
+-- rather than keeping a counter that could drift out of step with the thing
+-- it is counting.
+Config.TaskDerived = { roleSet = true, carsOwned = true, aptsOwned = true }
+
 Config.TaskOpening = { "role", "firstcoin", "firstjob", "firstbuy", "gohome", "earn500" }
 
 function Config.Task(id)

@@ -71,6 +71,9 @@ local function defaultData()
 		SurvivalWins = 0,
 		BestSurvival = 0,
 		MapBest = {}, -- best distance per map (studs)
+		-- LIFETIME event counters, written by bump(). City tasks read these;
+		-- challenges read their own per-period copies. See Config.Tasks.
+		Stats = {},
 		TutorialDone = false,
 		Login = { streak = 0, lastDay = 0, claimedDay = 0 },
 		Garden = { plots = {}, unlocked = 0 }, -- plots[i] = { seed, t0, watered } ; unlocked = extra plots bought
@@ -129,7 +132,14 @@ local function refreshChallenges(d)
 	return c
 end
 -- progress a stat on every live challenge that tracks it
+-- ONE CALL SITE FEEDS BOTH SYSTEMS. bump() used to only nudge challenge
+-- progress, which is per-day and per-week and gets wiped; city tasks need a
+-- LIFETIME counter of the same events. Keeping both here means a task and a
+-- challenge can never disagree about how many shifts you have worked, and
+-- nothing new has to be remembered at the forty-odd places that call this.
 local function bump(d, stat, amount)
+	d.Stats = type(d.Stats) == "table" and d.Stats or {}
+	d.Stats[stat] = (d.Stats[stat] or 0) + (amount or 0)
 	local c = refreshChallenges(d)
 	for _, list in { c.daily, c.weekly } do
 		for _, ch in list do
@@ -744,6 +754,10 @@ rf("BuyOutfit").OnServerInvoke = function(player, id)
 	s.data.Coins -= o.price
 	s.data.OwnedOutfits[id] = true
 	s.data.EquippedOutfit = id
+	-- the "spend some of it" city task (Config.Tasks). Cosmetics are the
+	-- cheapest thing a new player can buy, so this is the purchase the
+	-- opening sequence is actually waiting for.
+	bump(s.data, "cityBuys", 1)
 	task.spawn(save, player)
 	syncLook(player, s)
 	return { ok = true, data = publicData(s) }
@@ -770,6 +784,7 @@ rf("BuySkin").OnServerInvoke = function(player, id)
 	s.data.Coins -= k.price
 	s.data.OwnedSkins[id] = true
 	s.data.EquippedSkin = id
+	bump(s.data, "cityBuys", 1)
 	task.spawn(save, player)
 	syncLook(player, s)
 	feed(player.DisplayName .. " put on the " .. k.name .. " skin!", "rare")
@@ -1908,6 +1923,7 @@ do
 			-- out from, so a field can never look ripe while the server
 			-- disagrees.
 			farm = type(c.farm) == "table" and c.farm or nil,
+			tasks = type(c.tasks) == "table" and c.tasks or {},
 			tutorial = c.tutorial == true, tour = c.tour == true, apts = type(c.apts) == "table" and c.apts or {}, homeCar = c.homeCar, sleepReady = (os.time() - (tonumber(c.lastSleep) or 0)) > 20 * 3600,
 		}
 	end
@@ -2381,6 +2397,66 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "task" then
+			-------------------------------------------------------------
+			-- CITY TASKS (docs/ONBOARDING.md section 5, Config.Tasks).
+			--
+			-- The client asks "what now?" and gets exactly one task back,
+			-- with its progress. THE ANSWER IS NEVER EMPTY while work
+			-- remains -- an empty goal widget is the "what do I do?"
+			-- problem coming straight back, which is the whole reason this
+			-- exists.
+			--
+			-- CLAIMING IS SERVER-CHECKED against the same lifetime counters
+			-- bump() writes, so a client cannot claim a reward for a task
+			-- it has not done.
+			-------------------------------------------------------------
+			c.tasks = type(c.tasks) == "table" and c.tasks or {}
+			-- TWO COUNTER SYSTEMS, ONE LOOKUP. pay() writes PascalCase totals
+			-- straight onto the save (Sweeps, JobTasks, HomeNaps); bump()
+			-- writes lowercase lifetime counters into d.Stats. Rather than
+			-- migrate forty call sites, a task's `stat` is resolved against
+			-- both -- and against the derived states in Config.TaskDerived,
+			-- which are answers to "how many do you have" rather than counts
+			-- of things that happened.
+			local d = s.data
+			local lifetime = type(d.Stats) == "table" and d.Stats or {}
+			local function countOf(tbl)
+				local n = 0
+				for _ in pairs(type(tbl) == "table" and tbl or {}) do n += 1 end
+				return n
+			end
+			local derived = {
+				roleSet = c.role and 1 or 0,
+				carsOwned = countOf(c.cars),
+				aptsOwned = countOf(c.apts),
+			}
+			local stats = setmetatable({}, { __index = function(_, k)
+				if Config.TaskDerived[k] then return derived[k] or 0 end
+				return lifetime[k] or d[k] or 0
+			end })
+
+			if arg == "claim" then
+				local t = Config.Task(tostring(a2))
+				if not t or c.tasks[t.id] then return { ok = false } end
+				if not Config.TaskReady(t, c.tasks) then return { ok = false } end
+				if (stats[t.stat] or 0) < t.goal then return { ok = false, reason = "not finished yet" } end
+				c.tasks[t.id] = true
+				local got = 0
+				if (t.reward or 0) > 0 or (t.xp or 0) > 0 then
+					got = pay(player, s, t.reward or 0, t.xp or 0, nil)
+				end
+				save(player)
+				return { ok = true, coins = got, city = public(s), data = publicData(s) }
+			end
+
+			local t, progress = Config.NextTask(c.tasks, stats)
+			if not t then return { ok = true, task = nil } end
+			return { ok = true, task = { id = t.id, text = t.text, how = t.how,
+				reward = t.reward, xp = t.xp, track = t.track,
+				have = progress, need = t.goal,
+				ready = (stats[t.stat] or 0) >= t.goal } }
+
 		elseif action == "role" then
 			-------------------------------------------------------------
 			-- PICK A ROLE, OR CHANGE YOUR MIND.
