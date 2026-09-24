@@ -87,12 +87,55 @@ ok("just-planted is stage 0", Config.CropStage(plot(0), now) == 0)
 local long = plot(carrot.grow * 1000)
 ok("ready never spoils", Config.CropStage(long, now) == Config.Farm.Stages - 1)
 
+-- READY MEANS FINISHED. CropStage used to be floor(k * Stages), which handed
+-- out the ready stage at 75% and made the last quarter of every grow time
+-- decorative.
+for _, k in { 0.5, 0.75, 0.9, 0.99 } do
+	ok(("%d%% grown is not ready"):format(k * 100),
+		Config.CropStage(plot(carrot.grow * k), now) < Config.Farm.Stages - 1,
+		("stage %d at k=%.2f"):format(Config.CropStage(plot(carrot.grow * k), now), k))
+end
+ok("100% grown is ready", Config.CropStage(plot(carrot.grow), now) == Config.Farm.Stages - 1)
+
 local w = plot(carrot.grow / 2); w.watered = true
 ok("watering speeds growth", Config.CropProgress(w, now) > 0.5)
 local f = plot(carrot.grow / 2); f.fert = true
 ok("fertiliser speeds growth", Config.CropProgress(f, now) > 0.5)
 ok("fertiliser beats watering", Config.CropProgress(f, now) > Config.CropProgress(w, now),
 	"fertiliser costs coins; it has to be worth more than a free watering can")
+
+---------------------------------------------------------------------------
+section("Water and fertiliser")
+---------------------------------------------------------------------------
+-- THE BUG THIS GUARDS (Config.CropBoost): setting the flag alone re-scales
+-- growth that already happened, so a crop watered at 90% done would jump
+-- straight to ready and watering late would pay better than watering early.
+local late = plot(carrot.grow * 0.9)
+local beforeLate = Config.CropProgress(late, now)
+Config.CropBoost(late, "watered", now)
+ok("watering does not jump a crop forward",
+	Config.CropProgress(late, now) < beforeLate + 0.01,
+	("%.3f -> %.3f"):format(beforeLate, Config.CropProgress(late, now)))
+ok("a late-watered crop is still not ready", Config.CropStage(late, now) < Config.Farm.Stages - 1)
+
+-- watering EARLY saves more real time than watering late, because there is
+-- more remaining span to shorten
+local function secondsToReady(p)
+	local t = 0
+    while Config.CropStage(p, now + t) < Config.Farm.Stages - 1 and t < 100000 do t += 1 end
+	return t
+end
+local early = plot(0); Config.CropBoost(early, "watered", now)
+local mid = plot(carrot.grow * 0.5); Config.CropBoost(mid, "watered", now)
+ok("watering early saves more than watering late",
+	secondsToReady(early) < carrot.grow, "early water must beat the base grow time")
+ok("watering mid-way still helps", secondsToReady(mid) < carrot.grow * 0.5)
+
+ok("cannot water twice", Config.CropBoost(early, "watered", now) == false)
+local done = plot(carrot.grow * 2)
+ok("cannot fertilise a ready crop", Config.CropBoost(done, "fert", now) == false,
+	"otherwise the player is charged 25 coins for nothing")
+ok("boost refuses an empty plot", Config.CropBoost({}, "watered", now) == false)
 
 ---------------------------------------------------------------------------
 section("Economy balance")

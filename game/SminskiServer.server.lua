@@ -1903,6 +1903,11 @@ do
 			litter = litter, plots = plots, job = job, fare = fare, ripe = RIPE, jobsDone = st.jobsDone,
 			cars = c.cars, biz = c.biz, pantry = c.pantry, raceBest = c.raceBest, racing = st.race ~= nil, now = os.time(),
 			role = c.role, hood = c.hood,
+			-- THE WHOLE FARM RECORD, verbatim. The client draws crop stages
+			-- with Config.CropStage off exactly the table the server pays
+			-- out from, so a field can never look ripe while the server
+			-- disagrees.
+			farm = type(c.farm) == "table" and c.farm or nil,
 			tutorial = c.tutorial == true, tour = c.tour == true, apts = type(c.apts) == "table" and c.apts or {}, homeCar = c.homeCar, sleepReady = (os.time() - (tonumber(c.lastSleep) or 0)) > 20 * 3600,
 		}
 	end
@@ -1927,7 +1932,10 @@ do
 		return amount, bonus, full
 	end
 
-	rf("City").OnServerInvoke = function(player, action, arg)
+	-- a2 is the SECOND argument some actions need -- planting is "crop X in
+	-- plot i", which does not fit one value. Every caller written before this
+	-- passes two arguments and gets a2 = nil, so nothing had to change.
+	rf("City").OnServerInvoke = function(player, action, arg, a2)
 		local s = session(player)
 		if not s or not allow(s, "City", 0.12) then return { ok = false } end
 		local st = state(s)
@@ -2021,22 +2029,129 @@ do
 			if creditWorld then creditWorld(player, s, "cleaner", 1, got) end
 			return { ok = true, coins = got, city = public(s), data = publicData(s) }
 
-		elseif action == "plant" or action == "harvest" then
+		elseif action == "plant" or action == "harvest" or action == "water"
+			or action == "fert" or action == "sellCrops" then
+			-----------------------------------------------------------------
+			-- THE FARM (docs/FARMING.md).
+			--
+			-- WHY THE STATE IS A TIMESTAMP. A plot is
+			-- { crop, at, watered, fert } and NOTHING touches it between
+			-- planting and harvest -- no heartbeat, no ticking object, no
+			-- per-crop thread. Sixty players farming twelve plots each costs
+			-- the server zero work per frame, and growth continues while they
+			-- are offline for free, because it is arithmetic on `at`.
+			--
+			-- WHERE IT LIVES. c.farm, which is SAVED, unlike the legacy
+			-- st.plots timestamps that were session-only. A five minute crop
+			-- has to survive a rejoin; a forty-five second one did not.
+			--
+			-- ONE DEFINITION OF RIPENESS. Config.CropStage is the only thing
+			-- that decides, and the client draws from the same function, so
+			-- the field a player is looking at and the field being paid out
+			-- can never disagree.
+			--
+			-- EVERY BRANCH USES THE COALESCED save(). A watering pass over
+			-- twelve plots is one DataStore write, not twelve -- see the
+			-- rate-limited save() near the top of this file.
+			-----------------------------------------------------------------
+			c.farm = type(c.farm) == "table" and c.farm or { plots = {}, store = {} }
+			local F = c.farm
+			F.plots = type(F.plots) == "table" and F.plots or {}
+			F.store = type(F.store) == "table" and F.store or {}
+			local now = workspace:GetServerTimeNow()
+
+			local function carried()
+				local n = 0
+				for _, q in pairs(F.store) do n += q end
+				return n
+			end
+
+			if action == "sellCrops" then
+				-- SELLING IS A PHYSICAL DELIVERY. You have to be at a buyer's
+				-- door with the produce on you; there is no sell-from-anywhere
+				-- menu, because hauling is the half of the job that puts the
+				-- farmer in the city.
+				local atBuyer = near(pos, Places.CityMarketTill, 40)
+				if not atBuyer then
+					for _, l in lots do
+						if (l.btype == "grocery" or l.btype == "cafe" or l.btype == "restaurant")
+							and near(pos, l.door, 40) then atBuyer = true break end
+					end
+				end
+				if not atBuyer then return { ok = false, reason = "sell at a grocery or a kitchen" } end
+				local total, n = 0, 0
+				for id, qty in pairs(F.store) do
+					local cd = Config.Crop(tostring(id))
+					qty = math.floor(tonumber(qty) or 0)
+					if cd and qty > 0 then total += cd.sell * qty n += qty end
+				end
+				if n <= 0 then return { ok = false, reason = "nothing to sell" } end
+				F.store = {}
+				bump(s.data, "cropsSold", n)
+				local got = pay(player, s, total, math.max(2, math.floor(n / 2)), "CityHarvests")
+				if creditWorld then creditWorld(player, s, "farmhand", 1, got) end
+				save(player)
+				return { ok = true, coins = got, sold = n, city = public(s), data = publicData(s) }
+			end
+
 			local i = tonumber(arg)
 			local plot = i and farm[i]
 			if not plot or not near(pos, plot, 28) then return { ok = false, reason = "walk up to the field" } end
+			if i > Config.Farm.MaxPlots then return { ok = false } end
+			local key = tostring(i)
+			local rec = F.plots[key]
+
 			if action == "plant" then
-				if st.plots[i] then return { ok = false } end
-				st.plots[i] = workspace:GetServerTimeNow()
-				return { ok = true, city = public(s) }
+				if rec then return { ok = false, reason = "something is already growing there" } end
+				local cd = Config.Crop(tostring(a2))
+				if not cd then return { ok = false } end
+				if s.data.Level < (cd.level or 1) then return { ok = false, reason = "level", level = cd.level } end
+				if not spend(player, s, cd.seed) then return { ok = false, reason = "not enough coins" } end
+				F.plots[key] = { crop = cd.id, at = now }
+				save(player)
+				return { ok = true, city = public(s), data = publicData(s) }
+
+			elseif action == "water" or action == "fert" then
+				if not rec then return { ok = false, reason = "nothing growing there" } end
+				-- A READY CROP CANNOT BE HURRIED, and saying so is kinder than
+				-- silently taking the fertiliser money for nothing.
+				if Config.CropStage(rec, now) >= Config.Farm.Stages - 1 then
+					return { ok = false, reason = "that one is ready already" }
+				end
+				local field = action == "water" and "watered" or "fert"
+				if rec[field] then return { ok = false, reason = "already done" } end
+				-- CHARGE ONLY IF IT WILL DO SOMETHING. CropBoost is the one
+				-- definition of what water and fertiliser do (Config.lua), so
+				-- the client's preview and this payout cannot drift apart.
+				if action == "fert" and not spend(player, s, Config.Farm.FertCost) then
+					return { ok = false, reason = "not enough coins" }
+				end
+				Config.CropBoost(rec, field, now)
+				save(player)
+				return { ok = true, city = public(s), data = publicData(s) }
+
 			end
-			local t0 = st.plots[i]
-			if not t0 or workspace:GetServerTimeNow() - t0 < RIPE then return { ok = false, reason = "not ripe yet" } end
-			st.plots[i] = nil
+
+			-- HARVEST
+			if not rec then return { ok = false, reason = "nothing growing there" } end
+			if Config.CropStage(rec, now) < Config.Farm.Stages - 1 then
+				return { ok = false, reason = "not ripe yet" }
+			end
+			local cd = Config.Crop(rec.crop)
+			local n = math.random(cd.yield[1], cd.yield[2])
+			-- CAPACITY IS THE THROTTLE ON FARM INCOME, not the crop price
+			-- (docs/FARMING.md section 5). A full store means the trip into
+			-- town has to happen before any more is picked, which is the
+			-- pacing the job is built around.
+			local room = math.max(0, Config.Farm.StartStore - carried())
+			if room <= 0 then return { ok = false, reason = "you are carrying all you can -- sell some in town" } end
+			n = math.min(n, room)
+			F.plots[key] = nil
+			F.store[cd.id] = (F.store[cd.id] or 0) + n
 			bump(s.data, "harvest", 1)
-			local got = pay(player, s, CC.Harvest, 2, "CityHarvests")
-			if creditWorld then creditWorld(player, s, "farmhand", 1, got) end
-			return { ok = true, coins = got, city = public(s), data = publicData(s) }
+			s.data.CityHarvests = (s.data.CityHarvests or 0) + 1
+			save(player)
+			return { ok = true, got = n, crop = cd.id, city = public(s), data = publicData(s) }
 
 		elseif action == "checkout" then
 			-- GROCERIES. The basket is client-side until this moment; here it

@@ -1041,10 +1041,46 @@ function Config.CropProgress(plot, now)
 	return math.clamp((now - plot.at) / math.max(span, 1), 0, 1)
 end
 
--- 0..Stages-1. Stage Stages-1 is ready, and a ready crop never leaves it.
+-- 0..Stages-1. Stage Stages-1 is READY, and a ready crop never leaves it.
+--
+-- READY MEANS FINISHED, NOT NEARLY FINISHED. This used to be
+-- floor(k * Stages), which with four stages handed out the ready stage at
+-- k = 0.75 -- so every crop in the game could be harvested a quarter early
+-- and the last quarter of every grow time was decorative. The headless test
+-- caught it by asserting that a 90%-grown carrot is not yet ready.
+--
+-- The growing stages now divide the time BEFORE ready between them
+-- (Stages-1 of them), and ready is reserved for k = 1.
 function Config.CropStage(plot, now)
 	local k = Config.CropProgress(plot, now)
-	return math.min(Config.Farm.Stages - 1, math.floor(k * Config.Farm.Stages))
+	if k >= 1 then return Config.Farm.Stages - 1 end
+	return math.min(Config.Farm.Stages - 2, math.floor(k * (Config.Farm.Stages - 1)))
+end
+
+-- APPLY WATER OR FERTILISER WITHOUT REWRITING HISTORY.
+--
+-- Both work by shrinking the crop's total span, so just setting the flag
+-- re-scales growth that ALREADY HAPPENED: a crop watered at 90% done would
+-- jump straight to ready, and one watered the instant it was planted would
+-- get the same boost as one watered late. Neither is what a player means by
+-- "I watered it".
+--
+-- Holding progress constant across the change and moving `at` forward makes
+-- it a boost to WHAT IS LEFT, which is the intuition -- water early and you
+-- save more, because there is more remaining to shorten.
+--
+-- Returns false when there is nothing to do, so callers do not charge for it.
+function Config.CropBoost(plot, field, now)
+	if not plot or not plot.crop or plot[field] then return false end
+	if Config.CropStage(plot, now) >= Config.Farm.Stages - 1 then return false end
+	local before = Config.CropProgress(plot, now)
+	plot[field] = true
+	local c = Config.Crop(plot.crop)
+	local span = c.grow
+	if plot.watered then span *= (1 - Config.Farm.WaterCut) end
+	if plot.fert then span *= (1 - Config.Farm.FertCut) end
+	plot.at = now - before * span
+	return true
 end
 
 ---------------------------------------------------------------------------
