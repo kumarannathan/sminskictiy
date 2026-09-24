@@ -14,6 +14,7 @@ art/passes/
 # Roblox place file -- binary, merges badly. Version .rbxlx or Rojo instead.
 *.rbxl
 *.rbxm
+*.rbxl.lock
 
 .DS_Store
 
