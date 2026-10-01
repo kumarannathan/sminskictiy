@@ -156,3 +156,71 @@ seven idles — 45,600 instances, replicating to every client) now sit in
 ServerStorage as `Inv_Anim_*`. The Sminski is a procedurally posed part rig
 (`Models.poseSminski`), not a Motor6D rig, so these cannot be played on it
 as-is; see docs/HANDOFF.md.
+
+---
+
+# The third door: downloaded CC0 kits (2026-10-01)
+
+A third source, alongside Blender-built props and curated Roblox-inventory
+models: **downloaded third-party kits**, extracted to `~/Downloads/newassets/`.
+`docs/KITS.md` is the generated record — re-run `tools/kit_manifest.py` after
+adding one.
+
+These are **not** "Claude-built" in the sense `pipeline.md` means, and they
+have not been through the `assets.md` review. The same discipline as the
+inventory door applies: the owner choosing them is the first gate, this file
+is the record, and every placement keeps its part-built fallback.
+
+## Licence: checked, not assumed
+
+All six KayKit packs (Kay Lousberg) and both Quaternius MegaKits are **CC0** —
+public domain, commercial use fine, no attribution required. `[Standard]` in a
+Quaternius filename means "the free subset of the models", not a paid tier.
+
+**`Voxel House Interior - Free Sample` ships no licence file.** It is flagged
+`UNKNOWN` in `docs/KITS.md` and must not ship until that is resolved.
+
+## Technically clear
+
+All **424 meshes** are under the Roblox MeshPart limit of 10,000 triangles —
+counted from the OBJ faces, not estimated. The biggest is
+`table_round_A_decorated` at 4,422. Total across every kit is ~186,000
+triangles, which is small.
+
+## What each kit is actually for
+
+| Kit | Objects | Use |
+|---|---|---|
+| KayKit Furniture Bits | 53 | `Config.Furniture` — the flat-furnishing shop |
+| KayKit Halloween Bits | 70 | `Config.Seasons` — October dressing + seasonal shop |
+| KayKit Restaurant Bits | 150 | café / kitchen / restaurant interiors |
+| KayKit City Builder Bits | 61 | street furniture, shopfronts |
+| KayKit RPG Tools Bits | 59 | tools — farm, construction, workshop dressing |
+| KayKit Skeletons | 13 | unassigned; only if a monster loop is ever built |
+| Voxel House Interior | 18 | house interiors — **licence unresolved** |
+| Downtown City MegaKit | 459 | parked. A new district, later, by instruction. |
+
+## Three that are not what they look like
+
+- **`Garden cozy kit` contains no model files.** 94 PNGs and a PSD — 2D sprite
+  art. Not a farming kit. Possibly useful as UI or texture source.
+- **`Midi files` are MIDI, which Roblox cannot play.** They need rendering to
+  OGG first, and the tracklist (*Demon King Castle*, *Battle Theme IV*,
+  *Pyramid*) is an RPG pack — wrong register for this game entirely.
+- **`modern-apartment` (92 MB FBX) and `red_house.glb` (100 MB)** are
+  whole-building scenes, far past what a MeshPart takes. They need splitting
+  per room and per object in Blender before anything can enter the city. That
+  is modelling work, not a format conversion.
+
+`COLORALPHA 50 Menu Interface SFX` is 50 WAVs and is directly usable for UI
+sound — the one audio pack here that needs no work.
+
+## Still to do
+
+Nothing above is in the game yet. The meshes have to be **uploaded to Roblox**
+to get asset ids, and that needs Studio or Open Cloud; then
+`_inventory_setup.lua` curates them into `ReplicatedStorage.SminskiAssets.
+Inventory` as `Inv_<Name>`, stripping scripts, lights, sounds and emitters
+first. `Config.Furniture` and `Config.Seasons` already name every mesh they
+need, and `tests/run.luau` checks all 65 of those names against
+`docs/KITS.md`, so a typo cannot reach a player.

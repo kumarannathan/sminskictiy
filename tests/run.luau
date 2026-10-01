@@ -206,6 +206,71 @@ local first = Config.NextTask({}, {})
 ok("role comes first", first and first.id == "role")
 
 ---------------------------------------------------------------------------
+section("Furniture and seasons")
+---------------------------------------------------------------------------
+-- EVERY `inv` MUST NAME A MESH THAT ACTUALLY EXISTS, checked against the
+-- generated manifest rather than against memory. A typo here is invisible
+-- until a player buys the item and nothing appears in their flat, because
+-- K.place returns nil for an unknown template and every caller falls back
+-- silently by design.
+local kits = fs.readFile("docs/KITS.md")
+local function inManifest(name) return kits:find("`" .. name .. "`", 1, true) ~= nil end
+
+local cats = {}
+for _, c in Config.FurnitureCats do cats[c.id] = true end
+
+local seenId, seenInv = {}, {}
+for _, f in Config.Furniture do
+	ok("furniture " .. f.id .. " id is unique", not seenId[f.id], f.id)
+	seenId[f.id] = true
+	ok("furniture " .. f.id .. " mesh exists", inManifest(f.inv), f.inv .. " not in docs/KITS.md")
+	ok("furniture " .. f.id .. " has a real category", cats[f.cat] == true, f.cat)
+	ok("furniture " .. f.id .. " costs something", (f.price or 0) > 0)
+	ok("furniture " .. f.id .. " is named", type(f.name) == "string" and #f.name > 0)
+	seenInv[f.inv] = (seenInv[f.inv] or 0) + 1
+end
+ok("furniture catalogue is populated", #Config.Furniture >= 40, tostring(#Config.Furniture))
+ok("there is a cap on objects per flat", (Config.FurnitureMax or 0) > 0,
+	"every placed object is a streamed Model; uncapped is a frame-rate bug")
+
+-- A NEW PLAYER MUST BE ABLE TO AFFORD SOMETHING. The "spend some of it" task
+-- fires after the first shift, so the cheapest item has to be inside one
+-- shift's pay or the opening chain stalls on a shop they cannot use.
+local cheapest = math.huge
+for _, f in Config.Furniture do cheapest = math.min(cheapest, f.price) end
+ok("something is affordable on day one", cheapest <= 60, ("cheapest is %d"):format(cheapest))
+
+-- every category has at least one thing in it, or the tab is empty
+for _, c in Config.FurnitureCats do
+	local n = 0
+	for _, f in Config.Furniture do if f.cat == c.id then n += 1 end end
+	ok("category " .. c.id .. " is not empty", n > 0)
+end
+
+-- a bed must exist and must carry the sleep action HomeNaps pays off
+local beds = 0
+for _, f in Config.Furniture do if f.act == "sleep" then beds += 1 end end
+ok("at least one bed can be slept in", beds > 0,
+	"the `sleep at home` task waits on HomeNaps and nothing else grants it")
+
+for _, s in Config.Seasons do
+	ok("season " .. s.id .. " has a real month", (s.month or 0) >= 1 and s.month <= 12)
+	ok("season " .. s.id .. " has a shop", #s.shop > 0)
+	for _, it in s.shop do
+		ok("seasonal " .. it.id .. " mesh exists", inManifest(it.inv), it.inv)
+		ok("seasonal " .. it.id .. " costs coins", (it.price or 0) > 0,
+			"seasonal items are limited by TIME, not luck -- never a random drop")
+		ok("seasonal " .. it.id .. " cannot clash with furniture", not seenId[it.id], it.id)
+	end
+	for _, d in s.dress do
+		ok("dressing " .. d .. " mesh exists", inManifest(d), d)
+	end
+end
+ok("October has a season", Config.Season(10) ~= nil)
+ok("a quiet month has none", Config.Season(2) == nil)
+ok("SeasonItem finds a seasonal item", (Config.SeasonItem("h_pumpkin")) ~= nil)
+
+---------------------------------------------------------------------------
 section("Pixel grid (static, against City.lua source)")
 ---------------------------------------------------------------------------
 -- EVERY HUD DIMENSION IS A MULTIPLE OF 4 (docs/PIXEL_UI.md section 1). With

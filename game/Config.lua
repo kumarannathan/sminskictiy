@@ -1037,6 +1037,190 @@ Config.StarterHome = {
 	{ id = "computer", name = "Computer", act = "tasks" },
 }
 
+---------------------------------------------------------------------------
+-- FURNITURE: the shop that lets a player furnish their own flat.
+--
+-- WHY THIS IS THE RETENTION ITEM, not a nicety. The loop today is
+-- job -> money -> spend money, and it runs out: once you own a car, a flat
+-- and a wardrobe, coins stop meaning anything. A flat you decorate is the
+-- one money sink that never completes, because it is taste rather than a
+-- checklist -- and it is the thing a player brings a friend to see.
+--
+-- EVERY `inv` IS A REAL MESH NAME, from KayKit Furniture Bits (CC0, 53
+-- objects, see docs/KITS.md). They are placed with K.place("Inv_<inv>"),
+-- which measures the model rather than trusting its pivot, and every caller
+-- keeps a part-built fallback -- so a place file without the Inventory
+-- folder still builds the flat, just plainer.
+--
+-- PRICES CLIMB WITH FOOTPRINT, NOT WITH DETAIL. A rug and a sofa cost
+-- different amounts because one fills a room and the other dresses a
+-- corner, not because one has more triangles. Cheapest things first in each
+-- category so a new player can buy SOMETHING on their first visit -- the
+-- "spend some of it" task (Config.Tasks) is waiting on exactly that.
+---------------------------------------------------------------------------
+Config.FurnitureCats = {
+	{ id = "seat", name = "SEATING" },
+	{ id = "bed", name = "BEDS" },
+	{ id = "table", name = "TABLES" },
+	{ id = "store", name = "STORAGE" },
+	{ id = "light", name = "LIGHTING" },
+	{ id = "rug", name = "RUGS" },
+	{ id = "wall", name = "WALLS" },
+	{ id = "plant", name = "PLANTS" },
+}
+
+Config.Furniture = {
+	-- SEATING
+	{ id = "stool", inv = "chair_stool", name = "Stool", cat = "seat", price = 60 },
+	{ id = "stoolw", inv = "chair_stool_wood", name = "Wooden Stool", cat = "seat", price = 70 },
+	{ id = "chairA", inv = "chair_A", name = "Simple Chair", cat = "seat", price = 90 },
+	{ id = "chairAw", inv = "chair_A_wood", name = "Wooden Chair", cat = "seat", price = 100 },
+	{ id = "chairB", inv = "chair_B", name = "Padded Chair", cat = "seat", price = 120 },
+	{ id = "chairBw", inv = "chair_B_wood", name = "Dining Chair", cat = "seat", price = 130 },
+	{ id = "chairC", inv = "chair_C", name = "Reading Chair", cat = "seat", price = 150 },
+	{ id = "armchair", inv = "armchair", name = "Armchair", cat = "seat", price = 320, act = "sit" },
+	{ id = "armchairP", inv = "armchair_pillows", name = "Cosy Armchair", cat = "seat", price = 400, act = "sit" },
+	{ id = "couch", inv = "couch", name = "Sofa", cat = "seat", price = 650, act = "sit" },
+	{ id = "couchP", inv = "couch_pillows", name = "Big Sofa", cat = "seat", price = 800, act = "sit" },
+	-- BEDS. A bed is the only furniture with a job: HomeNaps pays once a day
+	-- and the "sleep at home" task waits on it.
+	{ id = "bedS", inv = "bed_single_A", name = "Single Bed", cat = "bed", price = 350, act = "sleep" },
+	{ id = "bedSb", inv = "bed_single_B", name = "Single Bed II", cat = "bed", price = 380, act = "sleep" },
+	{ id = "bedD", inv = "bed_double_A", name = "Double Bed", cat = "bed", price = 700, act = "sleep" },
+	{ id = "bedDb", inv = "bed_double_B", name = "Double Bed II", cat = "bed", price = 780, act = "sleep" },
+	-- TABLES
+	{ id = "tableS", inv = "table_small", name = "Side Table", cat = "table", price = 110 },
+	{ id = "tableL", inv = "table_low", name = "Coffee Table", cat = "table", price = 180 },
+	{ id = "tableM", inv = "table_medium", name = "Table", cat = "table", price = 260 },
+	{ id = "tableML", inv = "table_medium_long", name = "Long Table", cat = "table", price = 340 },
+	-- STORAGE
+	{ id = "shelfAs", inv = "shelf_A_small", name = "Small Shelf", cat = "store", price = 120 },
+	{ id = "shelfBs", inv = "shelf_B_small", name = "Wall Shelf", cat = "store", price = 140 },
+	{ id = "shelfBsd", inv = "shelf_B_small_decorated", name = "Dressed Shelf", cat = "store", price = 190 },
+	{ id = "shelfAb", inv = "shelf_A_big", name = "Bookcase", cat = "store", price = 280 },
+	{ id = "shelfBl", inv = "shelf_B_large", name = "Tall Shelf", cat = "store", price = 300 },
+	{ id = "shelfBld", inv = "shelf_B_large_decorated", name = "Full Bookcase", cat = "store", price = 420 },
+	{ id = "cabS", inv = "cabinet_small", name = "Small Cabinet", cat = "store", price = 200 },
+	{ id = "cabSd", inv = "cabinet_small_decorated", name = "Dressed Cabinet", cat = "store", price = 260 },
+	{ id = "cabM", inv = "cabinet_medium", name = "Cabinet", cat = "store", price = 340 },
+	{ id = "cabMd", inv = "cabinet_medium_decorated", name = "Grand Cabinet", cat = "store", price = 460, act = "outfits" },
+	-- LIGHTING. Lamps are the one category that must NOT ship a real
+	-- PointLight each: .claude/rules/performance.md is explicit that dynamic
+	-- lights stay intentional and limited, and a flat with six lamps in it
+	-- would be six. They are lit by the room, and `glow` marks the ones whose
+	-- shade gets an emissive material instead.
+	{ id = "lampT", inv = "lamp_table", name = "Table Lamp", cat = "light", price = 150, glow = true },
+	{ id = "lampS", inv = "lamp_standing", name = "Floor Lamp", cat = "light", price = 240, glow = true },
+	{ id = "candle", inv = "candle", name = "Candle", cat = "light", price = 40, glow = true },
+	-- RUGS
+	{ id = "rugOa", inv = "rug_oval_A", name = "Oval Rug", cat = "rug", price = 160 },
+	{ id = "rugOb", inv = "rug_oval_B", name = "Oval Rug II", cat = "rug", price = 160 },
+	{ id = "rugRa", inv = "rug_rectangle_A", name = "Rug", cat = "rug", price = 180 },
+	{ id = "rugRb", inv = "rug_rectangle_B", name = "Rug II", cat = "rug", price = 180 },
+	{ id = "rugSa", inv = "rug_rectangle_stripes_A", name = "Striped Rug", cat = "rug", price = 220 },
+	{ id = "rugSb", inv = "rug_rectangle_stripes_B", name = "Striped Rug II", cat = "rug", price = 220 },
+	-- WALLS
+	{ id = "picS", inv = "pictureframe_small_A", name = "Small Frame", cat = "wall", price = 70 },
+	{ id = "picSb", inv = "pictureframe_small_B", name = "Small Frame II", cat = "wall", price = 70 },
+	{ id = "picSc", inv = "pictureframe_small_C", name = "Small Frame III", cat = "wall", price = 70 },
+	{ id = "picM", inv = "pictureframe_medium", name = "Picture Frame", cat = "wall", price = 120 },
+	{ id = "picLa", inv = "pictureframe_large_A", name = "Large Frame", cat = "wall", price = 200 },
+	{ id = "picLb", inv = "pictureframe_large_B", name = "Large Frame II", cat = "wall", price = 200 },
+	{ id = "picTa", inv = "pictureframe_standing_A", name = "Standing Frame", cat = "wall", price = 110 },
+	{ id = "picTb", inv = "pictureframe_standing_B", name = "Standing Frame II", cat = "wall", price = 110 },
+	-- PLANTS
+	{ id = "cacSa", inv = "cactus_small_A", name = "Small Cactus", cat = "plant", price = 50 },
+	{ id = "cacSb", inv = "cactus_small_B", name = "Small Cactus II", cat = "plant", price = 50 },
+	{ id = "cacMa", inv = "cactus_medium_A", name = "Cactus", cat = "plant", price = 90 },
+	{ id = "cacMb", inv = "cactus_medium_B", name = "Cactus II", cat = "plant", price = 90 },
+	-- SMALL DRESSING. Cheap on purpose: these are what a player buys with
+	-- their first hundred coins, and the first thing you own should be
+	-- something you chose rather than something you were given.
+	{ id = "pillowA", inv = "pillow_A", name = "Cushion", cat = "wall", price = 30 },
+	{ id = "pillowB", inv = "pillow_B", name = "Cushion II", cat = "wall", price = 30 },
+	{ id = "books", inv = "book_set", name = "Books", cat = "store", price = 45 },
+	{ id = "book", inv = "book_single", name = "Book", cat = "store", price = 25 },
+}
+
+---------------------------------------------------------------------------
+-- SEASONS: the monthly theme (docs/RELEASE.md section 2.3).
+--
+-- WHY A DATE RANGE AND NOT A FLAG. A theme somebody has to remember to
+-- switch on is a theme that ships late and stays on into November. The month
+-- decides, the server decides, and nothing has to be deployed on the day.
+--
+-- SEASONAL ITEMS ARE LIMITED BY TIME, NOT BY LUCK. They cost coins and
+-- anyone who plays in the window can buy every one -- there is no seasonal
+-- gacha. The scarcity is "you were here in October", which is the kind that
+-- makes people turn up, rather than the kind that makes them spend. It also
+-- keeps the whole seasonal layer clear of the Paid Random Items rules that
+-- section 0 of docs/RELEASE.md is about.
+--
+-- Every `inv` is a real mesh from KayKit Halloween Bits (CC0, 70 objects,
+-- docs/KITS.md), and every one is furniture: the kit is props, not clothing,
+-- so the reward for playing in October is a flat you can make creepy.
+---------------------------------------------------------------------------
+Config.Seasons = {
+	{
+		id = "halloween", name = "SPOOKY MONTH", month = 10,
+		tint = Color3.fromRGB(255, 138, 48),
+		blurb = "Sminski City goes dark for October.",
+		-- street dressing: placed by the city, not owned by anybody
+		dress = { "pumpkin_orange", "pumpkin_orange_jackolantern", "pumpkin_yellow_small",
+			"lantern_standing", "lantern_hanging", "tree_dead_medium",
+			"tree_pine_orange_medium", "gravestone", "candle_triple" },
+		-- buyable for coins, all month, then gone until next October
+		shop = {
+			{ id = "h_pumpkin", inv = "pumpkin_orange_jackolantern", name = "Jack-o'-Lantern", price = 120, glow = true },
+			{ id = "h_pumpkinY", inv = "pumpkin_yellow_jackolantern", name = "Yellow Lantern", price = 120, glow = true },
+			{ id = "h_pumpkinS", inv = "pumpkin_orange_small", name = "Little Pumpkin", price = 60 },
+			{ id = "h_lantern", inv = "lantern_standing", name = "Graveyard Lantern", price = 180, glow = true },
+			{ id = "h_hanging", inv = "lantern_hanging", name = "Hanging Lantern", price = 200, glow = true },
+			{ id = "h_candles", inv = "candle_triple", name = "Three Candles", price = 90, glow = true },
+			{ id = "h_grave", inv = "gravestone", name = "Gravestone", price = 150 },
+			{ id = "h_coffin", inv = "coffin_decorated", name = "Fancy Coffin", price = 450 },
+			{ id = "h_tree", inv = "tree_dead_medium", name = "Dead Tree", price = 260 },
+			{ id = "h_skull", inv = "skull_candle", name = "Candle Skull", price = 110, glow = true },
+			{ id = "h_shrine", inv = "shrine_candles", name = "Little Shrine", price = 380, glow = true },
+			{ id = "h_fence", inv = "fence_broken", name = "Broken Fence", price = 70 },
+		},
+	},
+}
+
+-- WHICH SEASON IS ON, or nil. `month` is os.date("*t").month on the SERVER;
+-- a client must never decide this, or every player in a different timezone
+-- gets a different shop.
+function Config.Season(month)
+	for _, s in Config.Seasons do
+		if s.month == month then return s end
+	end
+	return nil
+end
+
+-- Seasonal items live in the same inventory as normal furniture and are
+-- looked up the same way, so a flat does not care how a thing was bought.
+function Config.SeasonItem(id)
+	for _, s in Config.Seasons do
+		for _, it in s.shop do
+			if it.id == id then return it, s end
+		end
+	end
+	return nil
+end
+
+function Config.Furn(id)
+	for _, f in Config.Furniture do
+		if f.id == id then return f end
+	end
+	return nil
+end
+
+-- MAX OBJECTS IN A FLAT. A cap exists because every placed object is a
+-- streamed Model: a hundred of them in one room is a frame-rate problem
+-- that only shows up on the device of whoever walks in, not the owner who
+-- placed them one at a time.
+Config.FurnitureMax = 40
+
 -- HOW FAR ALONG A PLOT IS, 0..1. The one place this arithmetic lives: the
 -- server pays off it, the client draws off it, and neither may invent its
 -- own. `now` is workspace:GetServerTimeNow() on both sides.
