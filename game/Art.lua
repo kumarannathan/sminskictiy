@@ -1,6 +1,12 @@
 -- Art (ReplicatedStorage.SminskiShared.Art)
--- Uploaded image ids for the Blender-rendered UI art (see art/blender/*.py).
--- Re-render + re-upload, then update these ids.
+-- Uploaded image ids for the UI art.
+--
+-- Icons and nine-slices are PIXEL art from `art/pixel/pixel_ui.py` (Pillow,
+-- authored one pixel per pixel). They are NOT rendered in Blender: rendering
+-- geometry and downscaling it produces the soft mush that
+-- ResampleMode = Pixelated exists to prevent.
+--
+-- Re-run the script, re-upload, then update these ids.
 
 local Art = {}
 
@@ -8,37 +14,51 @@ Art.logo = "rbxassetid://86239266364583"
 Art.hero = "rbxassetid://103450079715685"
 
 -- tintable surfaces: base (tint with ImageColor3) + untinted gloss overlay
+-- PIXEL NINE-SLICES. Native sizes are deliberately TINY -- 24 and 32 px --
+-- because Roblox scales them with nearest-neighbour and a 1px line in the
+-- source lands as a crisp 4px line on screen at SliceScale 4 (UI.T.border).
+-- The old art was 512x160 and downscaled, which is what made every edge
+-- disagree about its own thickness.
+--
+-- NO `gloss`. The old set shipped a second untinted overlay to fake a
+-- specular sheen, which is a 3D idea; the art now carries its own 1px
+-- highlight along the top inside edge. UI.skin treats gloss as optional, so
+-- an entry that still has one keeps working.
+--
+-- `pill` and `disc` share an id on purpose: both are a 24px square at full
+-- corner radius, so they are byte-identical and Roblox deduplicated them. A
+-- pill is just that circle nine-sliced and stretched wide.
 Art.ui = {
-	pill = { base = "rbxassetid://99657844019092", gloss = "rbxassetid://97391711534640", size = Vector2.new(512, 160), corner = 80 },
-	key = { base = "rbxassetid://138123926039588", gloss = "rbxassetid://108723651643110", size = Vector2.new(512, 160), corner = 36 },
-	card = { base = "rbxassetid://75930661398282", gloss = "rbxassetid://138290243393708", size = Vector2.new(512, 512), corner = 64 },
-	disc = { base = "rbxassetid://83510130191298", gloss = "rbxassetid://96620764832524", size = Vector2.new(256, 256), corner = 128 },
+	pill = { base = "rbxassetid://88020931290462", size = Vector2.new(24, 24), corner = 12 },
+	key = { base = "rbxassetid://133814936064778", size = Vector2.new(24, 24), corner = 6 },
+	card = { base = "rbxassetid://104857404775729", size = Vector2.new(32, 32), corner = 8 },
+	disc = { base = "rbxassetid://88020931290462", size = Vector2.new(24, 24), corner = 12 },
 }
 
 Art.icons = {
-	bag = "rbxassetid://93443946610849",
-	bolt = "rbxassetid://89556041455362",
-	capsule = "rbxassetid://72391977362202",
-	chart = "rbxassetid://133655204103548",
-	clock = "rbxassetid://77207325992017",
-	coin = "rbxassetid://80552627031159",
-	crown = "rbxassetid://101195423074105",
-	dog = "rbxassetid://125517002311790",
-	friends = "rbxassetid://133005970089585",
-	gear = "rbxassetid://133966172818876",
-	heart = "rbxassetid://95676902868697",
-	hourglass = "rbxassetid://75034171418656",
-	house = "rbxassetid://98925649332484",
-	lock = "rbxassetid://78634026624489",
-	magnet = "rbxassetid://84794166139637",
-	paw = "rbxassetid://74333375857134",
-	pin = "rbxassetid://130917909666859",
-	play = "rbxassetid://76050131788638",
-	shield = "rbxassetid://100049017134984",
-	shirt = "rbxassetid://109761039204335",
-	star = "rbxassetid://99322292877366",
-	trophy = "rbxassetid://79637510885710",
-	x2 = "rbxassetid://108623554552581",
+	bag = "rbxassetid://75166212245448",
+	bolt = "rbxassetid://89786936433804",
+	capsule = "rbxassetid://86248755938322",
+	chart = "rbxassetid://117443758026393",
+	clock = "rbxassetid://78008761472059",
+	coin = "rbxassetid://92004397180565",
+	crown = "rbxassetid://118075418122290",
+	dog = "rbxassetid://70608985979986",
+	friends = "rbxassetid://79778417049972",
+	gear = "rbxassetid://98610968076801",
+	heart = "rbxassetid://98903381055834",
+	hourglass = "rbxassetid://85704161526872",
+	house = "rbxassetid://110048869292539",
+	lock = "rbxassetid://98364052009349",
+	magnet = "rbxassetid://124521666191803",
+	paw = "rbxassetid://88699596402893",
+	pin = "rbxassetid://87141795618138",
+	play = "rbxassetid://88695453713587",
+	shield = "rbxassetid://123541362398182",
+	shirt = "rbxassetid://86580374971699",
+	star = "rbxassetid://117058200627116",
+	trophy = "rbxassetid://94411923660026",
+	x2 = "rbxassetid://128721496686306",
 }
 
 -- which icon each powerup uses
