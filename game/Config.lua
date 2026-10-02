@@ -1525,6 +1525,54 @@ function Config.WheelSpin(seed)
 	return #Config.Wheel, Config.Wheel[#Config.Wheel]
 end
 
+---------------------------------------------------------------------------
+-- DAILY LOGIN (docs/RELEASE.md 2.3). A seven-day cycle that repeats.
+--
+-- THE STREAK SURVIVES ONE MISSED DAY. Losing six days of progress to one
+-- late night makes people quit rather than try again, which is the opposite
+-- of what a login reward is for. One grace day is forgiven automatically;
+-- two breaks it.
+--
+-- THE CYCLE REPEATS RATHER THAN ENDING. A ladder that finishes leaves a
+-- returning player with nothing on day eight, which is exactly when you most
+-- want them to have something.
+--
+-- DAY 7 IS WORTH TURNING UP FOR. If the last step is only slightly better
+-- than the first, there is no reason to keep the streak alive.
+---------------------------------------------------------------------------
+Config.LoginDays = {
+	{ day = 1, coins = 100, name = "100 coins" },
+	{ day = 2, coins = 0, ticket = 1, name = "A capsule" },
+	{ day = 3, coins = 250, name = "250 coins" },
+	{ day = 4, coins = 0, furnRoll = true, name = "A piece of furniture" },
+	{ day = 5, coins = 400, name = "400 coins" },
+	{ day = 6, coins = 0, ticket = 2, name = "Two capsules" },
+	{ day = 7, coins = 1000, ticket = 1, name = "1000 coins + a capsule" },
+}
+Config.LoginGraceDays = 1
+
+function Config.LoginDay(n)
+	local i = ((math.max(1, math.floor(n or 1)) - 1) % #Config.LoginDays) + 1
+	return Config.LoginDays[i], i
+end
+
+-- WHAT TODAY'S CLAIM DOES TO A STREAK. Pure arithmetic on two day-numbers so
+-- it can be tested without a clock, and so the server and any UI preview
+-- agree. `lastDay` and `today` are days since epoch, computed on the SERVER.
+--
+-- Returns: canClaim, newStreak.
+function Config.LoginStreak(lastDay, today)
+	lastDay = tonumber(lastDay) or 0
+	today = tonumber(today) or 0
+	if lastDay >= today then return false, nil end       -- already claimed today
+	local gap = today - lastDay
+	if lastDay == 0 then return true, 1 end              -- first ever
+	if gap <= 1 + Config.LoginGraceDays then
+		return true, nil                                  -- continues (caller adds 1)
+	end
+	return true, 1                                        -- broken, start again
+end
+
 function Config.Set(id)
 	for _, st in Config.Sets do
 		if st.id == id then return st end

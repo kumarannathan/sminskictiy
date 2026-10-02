@@ -2420,6 +2420,57 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "login" or action == "claimLogin" then
+			-----------------------------------------------------------------
+			-- DAILY LOGIN (Config.LoginDays).
+			--
+			-- THE DAY NUMBER COMES FROM THE SERVER'S CLOCK, as days since
+			-- epoch in UTC. A client's os.date is its own timezone and its own
+			-- system clock, either of which would hand out seven rewards to
+			-- anybody willing to change their date.
+			-----------------------------------------------------------------
+			local today = math.floor(os.time() / 86400)
+			c.login = type(c.login) == "table" and c.login or {}
+			local L = c.login
+			L.last = tonumber(L.last) or 0
+			L.streak = math.max(1, math.floor(tonumber(L.streak) or 1))
+
+			local canClaim, reset = Config.LoginStreak(L.last, today)
+			local nextStreak = reset or (L.streak + 1)
+			if L.last == 0 then nextStreak = 1 end
+
+			if action == "login" then
+				local def = Config.LoginDay(canClaim and nextStreak or L.streak)
+				return { ok = true, canClaim = canClaim, streak = L.streak,
+					nextStreak = nextStreak, reward = def, days = Config.LoginDays }
+			end
+
+			if not canClaim then return { ok = false, reason = "come back tomorrow" } end
+			L.last, L.streak = today, nextStreak
+			local def = Config.LoginDay(nextStreak)
+			local got = (def.coins or 0) > 0 and pay(player, s, def.coins, 10, nil) or 0
+			if def.ticket then
+				c.tickets = math.max(0, math.floor(tonumber(c.tickets) or 0)) + def.ticket
+			end
+			local gotFurn
+            if def.furnRoll then
+				c.furn = type(c.furn) == "table" and c.furn or {}
+				local pool = {}
+				for _, f in Config.Furniture do
+					if not c.furn[f.id] then table.insert(pool, f.id) end
+				end
+				if #pool > 0 then
+					gotFurn = pool[math.random(1, #pool)]
+					c.furn[gotFurn] = true
+				else
+					got += pay(player, s, 400, 0, nil)
+				end
+			end
+			save(player)
+			return { ok = true, streak = nextStreak, reward = def, coins = got,
+				ticket = def.ticket, furniture = gotFurn,
+				city = public(s), data = publicData(s) }
+
 		elseif action == "odds" then
 			-- THE ODDS ANY RANDOM REWARD IS REQUIRED TO PUBLISH. Served from
 			-- the same tables the rolls use, so what a player is told and what

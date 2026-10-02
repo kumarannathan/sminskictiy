@@ -479,6 +479,49 @@ ok("the jackpot stays rare", (seen[jackIdx] or 0) < spins * 0.1,
 	("%d of %d"):format(seen[jackIdx] or 0, spins))
 
 ---------------------------------------------------------------------------
+section("Daily login")
+---------------------------------------------------------------------------
+ok("there is a full week", #Config.LoginDays == 7, tostring(#Config.LoginDays))
+for i, d in Config.LoginDays do
+	ok("login day " .. i .. " pays something",
+		(d.coins or 0) > 0 or d.ticket or d.furnRoll,
+		"a dead day in the ladder is a day people skip")
+	ok("login day " .. i .. " is named", type(d.name) == "string" and #d.name > 0)
+end
+
+-- DAY 7 MUST BE WORTH THE WEEK. If the last rung is barely better than the
+-- first, there is no reason to keep a streak alive, which is the only thing
+-- the ladder exists to do.
+local d1, d7 = Config.LoginDays[1], Config.LoginDays[7]
+ok("day 7 beats day 1 by a lot", (d7.coins or 0) >= (d1.coins or 0) * 5,
+	("%d vs %d"):format(d7.coins or 0, d1.coins or 0))
+
+-- THE CYCLE REPEATS. A ladder that ends leaves a returning player with
+-- nothing on day eight, which is exactly when you want them to have something.
+local day8 = Config.LoginDay(8)
+ok("day 8 wraps to day 1", day8.day == 1)
+local day15 = Config.LoginDay(15)
+ok("day 15 wraps too", day15.day == 1)
+
+-- STREAK MATHS, tested without a clock.
+local can, reset = Config.LoginStreak(0, 100)
+ok("a first claim is allowed", can and reset == 1)
+can = Config.LoginStreak(100, 100)
+ok("claiming twice in a day is refused", can == false)
+can, reset = Config.LoginStreak(100, 101)
+ok("the next day continues the streak", can and reset == nil)
+-- ONE MISSED DAY IS FORGIVEN. Losing six days to one late night makes people
+-- quit rather than try again.
+can, reset = Config.LoginStreak(100, 102)
+ok("one missed day is forgiven", can and reset == nil,
+	"a grace day is the difference between a lapse and a quit")
+can, reset = Config.LoginStreak(100, 103)
+ok("two missed days breaks the streak", can and reset == 1)
+can = Config.LoginStreak(100, 99)
+ok("a clock that went backwards claims nothing", can == false,
+	"a client cannot move the server's clock, but a server restart might")
+
+---------------------------------------------------------------------------
 section("Random-reward compliance")
 ---------------------------------------------------------------------------
 -- THIS SECTION IS A RELEASE GATE, not a nicety (docs/RELEASE.md section 0).
