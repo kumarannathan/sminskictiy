@@ -242,6 +242,17 @@ return function(deps)
 			local res = remote("mastery")
 			if not res or not res.ok then return end
 			count.Text = res.title and ("title: " .. res.title) or "no title set"
+			-- the header doubles as the button, since the title IS what that
+			-- line is reporting
+			local pickRow = Instance.new("Frame")
+			pickRow.Size = UDim2.new(1, -8, 0, T.tap.min)
+			pickRow.BackgroundTransparency = 1
+			pickRow.Parent = list
+			UI.button(pickRow, "CHOOSE A TITLE", { size = UDim2.new(1, 0, 0, T.tap.min),
+				color = C.lav, textSize = T.size.sm,
+				onClick = function() A.pickTitle(res.titles, res.title, function()
+					A.showMastery(list, lay, count)
+				end) end })
 			for _, t in res.tracks do
 				local f = Instance.new("Frame")
 				f.Size = UDim2.new(1, -8, 0, 62)
@@ -289,6 +300,68 @@ return function(deps)
 			end
 			list.CanvasSize = UDim2.fromOffset(0, lay.AbsoluteContentSize.Y + 12)
 		end)
+	end
+
+	---------------------------------------------------------------------
+	-- TITLES: the cheapest social flex there is (docs/RELEASE.md 2.5).
+	--
+	-- A title you cannot take off is a punishment for having earned it, so
+	-- "none" is always offered and the server accepts an empty string.
+	---------------------------------------------------------------------
+	function A.pickTitle(owned, currentTitle, onPicked)
+		local holder, card = UI.card(gui, UDim2.fromOffset(360, 420),
+			UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), C.paper)
+		UI.text(card, "YOUR TITLE", { Size = UDim2.new(1, 0, 0, 30),
+			Position = UDim2.fromOffset(0, 14), Font = T.font.display,
+			TextSize = T.size.lg, ZIndex = 3 })
+		local list = Instance.new("ScrollingFrame")
+		list.Size = UDim2.new(1, -24, 1, -116)
+		list.Position = UDim2.fromOffset(12, 52)
+		list.BackgroundTransparency = 1
+		list.BorderSizePixel = 0
+		list.ScrollBarThickness = 6
+		list.ZIndex = 3
+		list.Parent = card
+		local lay = Instance.new("UIListLayout")
+		lay.Padding = UDim.new(0, T.space.xs)
+		lay.Parent = list
+
+		local function pick(id)
+			task.spawn(function()
+				local r = remote("setTitle", id)
+				if r and r.ok then
+					holder:Destroy()
+					if onPicked then onPicked(id) end
+				end
+			end)
+		end
+
+		local function rowFor(id, label, have)
+			local f = Instance.new("Frame")
+			f.Size = UDim2.new(1, -8, 0, T.tap.min)
+			f.BackgroundTransparency = 1
+			f.Parent = list
+			UI.button(f, label, { size = UDim2.new(1, 0, 0, T.tap.min),
+				color = (currentTitle == id) and C.mint or (have and C.paper2 or C.paper3),
+				textColor = have and C.ink or C.inkFaint,
+				textSize = T.size.sm,
+				onClick = have and function() pick(id) end or function()
+					City.toast("you have not earned that one yet")
+				end })
+		end
+
+		-- NONE FIRST. Taking a title off is a thing people do, and burying it
+		-- under thirty earned ones makes it look like it is not allowed.
+		rowFor("", "— no title —", true)
+		for _, t in Config.Titles do
+			rowFor(t.id, t.name, (owned or {})[t.id] == true)
+		end
+		list.CanvasSize = UDim2.fromOffset(0, lay.AbsoluteContentSize.Y + 8)
+
+		UI.button(card, "CLOSE", { size = UDim2.fromOffset(140, T.tap.std),
+			pos = UDim2.new(0.5, 0, 1, -12), anchor = Vector2.new(0.5, 1),
+			color = C.coral, onClick = function() holder:Destroy() end })
+		return holder
 	end
 
 	return A
