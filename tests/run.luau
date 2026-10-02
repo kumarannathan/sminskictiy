@@ -214,7 +214,20 @@ section("Furniture and seasons")
 -- K.place returns nil for an unknown template and every caller falls back
 -- silently by design.
 local kits = fs.readFile("docs/KITS.md")
-local function inManifest(name) return kits:find("`" .. name .. "`", 1, true) ~= nil end
+
+-- PER-KIT, NOT WHOLE-FILE. An earlier version searched the entire manifest,
+-- so a furniture item naming a HALLOWEEN mesh passed happily -- `candle` did
+-- exactly that, and it only surfaced when 53 of 54 meshes imported and one
+-- was silently absent. A kit that is not imported yet is not a mesh you have.
+local function kitSection(kit)
+	local i = kits:find("\n## " .. kit, 1, true)
+	if not i then return "" end
+	local j = kits:find("\n## ", i + 4, true) or #kits
+	return kits:sub(i, j)
+end
+local FURN_KIT = kitSection("furniture")
+local HALLOWEEN_KIT = kitSection("KayKit_HalloweenBits_1.0_FREE")
+local function inKit(section, name) return section:find("`" .. name .. "`", 1, true) ~= nil end
 
 local cats = {}
 for _, c in Config.FurnitureCats do cats[c.id] = true end
@@ -223,7 +236,8 @@ local seenId, seenInv = {}, {}
 for _, f in Config.Furniture do
 	ok("furniture " .. f.id .. " id is unique", not seenId[f.id], f.id)
 	seenId[f.id] = true
-	ok("furniture " .. f.id .. " mesh exists", inManifest(f.inv), f.inv .. " not in docs/KITS.md")
+	ok("furniture " .. f.id .. " mesh is in the FURNITURE kit", inKit(FURN_KIT, f.inv),
+		f.inv .. " -- not in the furniture kit (another kit does not count)")
 	ok("furniture " .. f.id .. " has a real category", cats[f.cat] == true, f.cat)
 	ok("furniture " .. f.id .. " costs something", (f.price or 0) > 0)
 	ok("furniture " .. f.id .. " is named", type(f.name) == "string" and #f.name > 0)
@@ -262,13 +276,13 @@ for _, s in Config.Seasons do
 	ok("season " .. s.id .. " has a real month", (s.month or 0) >= 1 and s.month <= 12)
 	ok("season " .. s.id .. " has a shop", #s.shop > 0)
 	for _, it in s.shop do
-		ok("seasonal " .. it.id .. " mesh exists", inManifest(it.inv), it.inv)
+		ok("seasonal " .. it.id .. " mesh is in the Halloween kit", inKit(HALLOWEEN_KIT, it.inv), it.inv)
 		ok("seasonal " .. it.id .. " costs coins", (it.price or 0) > 0,
 			"seasonal items are limited by TIME, not luck -- never a random drop")
 		ok("seasonal " .. it.id .. " cannot clash with furniture", not seenId[it.id], it.id)
 	end
 	for _, d in s.dress do
-		ok("dressing " .. d .. " mesh exists", inManifest(d), d)
+		ok("dressing " .. d .. " mesh is in the Halloween kit", inKit(HALLOWEEN_KIT, d), d)
 	end
 end
 ok("October has a season", Config.Season(10) ~= nil)

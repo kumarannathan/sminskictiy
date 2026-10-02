@@ -224,3 +224,41 @@ Inventory` as `Inv_<Name>`, stripping scripts, lights, sounds and emitters
 first. `Config.Furniture` and `Config.Seasons` already name every mesh they
 need, and `tests/run.luau` checks all 65 of those names against
 `docs/KITS.md`, so a typo cannot reach a player.
+
+## Importing a KayKit pack: what it actually takes (done 2026-10-01, furniture)
+
+Four things the 3D Importer does that you have to undo. None are obvious and
+all of them look fine until you put the asset next to a character.
+
+**1. Everything lands in Workspace, not Inventory.** The importer ignores
+where you want it. Move by name into `SminskiAssets.Inventory` afterwards —
+the KayKit filenames already match the `inv` fields in `Config.Furniture`, so
+nothing needs renaming.
+
+**2. The scale is 100x.** KayKit authors in centimetres; a Roblox stud is
+28 cm. A chair arrived 125 studs tall. **Divide by 28** — `m:ScaleTo(1/28)` —
+and an armchair lands at 6.4 x 4.4 x 5.7, which reads correctly beside a
+5-stud reference block.
+
+**3. No textures at all.** All 53 meshes arrived with `TextureID = ""` and a
+grey tint. Each KayKit pack has ONE shared atlas — `Assets/texture/
+<pack>_texture.png`, 15 KB — which is uploaded once and assigned to every
+mesh. 53 objects therefore cost one texture fetch, which is the sharing
+`.claude/rules/performance.md` asks for. The grey import tint has to be reset
+to white or it multiplies the atlas down.
+
+**4. Pivots are at the mesh centre.** `K.place` stands a model on a floor by
+its pivot, so every object would be half-buried. Measure the bounding box and
+re-pivot to the bottom centre, then record `H`/`W`/`SizeX`/`SizeZ` as
+attributes — `K.place`'s `opts.height` and `opts.width` scale off them.
+
+Each curated model carries `Curated = true`, `Creator` and `Texture`
+attributes, so a re-run skips what is already done.
+
+### The bug this import caught
+
+`Config.Furniture` listed a `candle`, and 53 of 54 meshes imported. `candle`
+is in the **Halloween** kit, not the furniture one. The test had checked that
+a mesh name appeared *somewhere* in `docs/KITS.md`, so naming a mesh from an
+unimported kit passed cleanly. It now checks the specific kit section. A kit
+you have not imported is not a mesh you have.

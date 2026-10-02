@@ -1111,7 +1111,6 @@ Config.Furniture = {
 	-- shade gets an emissive material instead.
 	{ id = "lampT", inv = "lamp_table", name = "Table Lamp", cat = "light", price = 150, glow = true },
 	{ id = "lampS", inv = "lamp_standing", name = "Floor Lamp", cat = "light", price = 240, glow = true },
-	{ id = "candle", inv = "candle", name = "Candle", cat = "light", price = 40, glow = true },
 	-- RUGS
 	{ id = "rugOa", inv = "rug_oval_A", name = "Oval Rug", cat = "rug", price = 160 },
 	{ id = "rugOb", inv = "rug_oval_B", name = "Oval Rug II", cat = "rug", price = 160 },
