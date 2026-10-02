@@ -59,7 +59,28 @@ return function(deps)
 		if shown[i] then shown[i]:Destroy() end
 		local def = Config.Furn(p.id)
 		local it = def or (Config.SeasonItem(p.id))
-		if not it then return end
+		if not it then
+			-- AN ITEM WHOSE ID HAS LEFT CONFIG STILL HAS TO BE REMOVABLE.
+			--
+			-- Returning early drew nothing, so there was nothing to tap, so
+			-- it could never be picked up -- while still counting against
+			-- Config.FurniturePlaced. Rotating a seasonal item out, which the
+			-- monthly plan explicitly does, would silently eat a slot in every
+			-- flat that had one out, and the owner would hit "that is all this
+			-- room will hold" with visibly fewer than 40 things in the room.
+			--
+			-- A plain marker is placed instead: visible, tappable, obviously
+			-- not furniture.
+			local ghostCF = worldOf(p)
+			local m = fallback(nil, ghostCF)
+			m.Name = "Furn_missing"
+			for _, d in m:GetDescendants() do
+				if d:IsA("BasePart") then d.Transparency = 0.45 d.Color = C.inkFaint end
+			end
+			m.Parent = room
+			shown[i] = m
+			return
+		end
 		local cf = worldOf(p)
 		local m = K.place(it.inv, cf) or fallback(it, cf)
 		m.Name = "Furn_" .. p.id

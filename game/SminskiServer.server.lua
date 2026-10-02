@@ -1404,6 +1404,22 @@ activityEvent.OnServerEvent:Connect(function(player, activity, where)
 	if activity ~= "run" and activity ~= "hub" and activity ~= "city" then return end
 	if player:GetAttribute("Activity") == "park" then return end
 	local was = player:GetAttribute("Activity")
+	-- RATE LIMITED, BECAUSE THIS CAN FORCE A DATASTORE WRITE.
+	--
+	-- Leaving the city flushes any deferred pay through writeNow, which skips
+	-- the cooldown save() has. A client alternating city/hub after each paid
+	-- item therefore defeats the whole point of deferring and burns the
+	-- SERVER's shared DataStore budget -- and the victims are the other
+	-- players on it, whose saves start getting queued and dropped.
+	--
+	-- A real transition is a loading screen; nobody makes two a second.
+	if was == activity then return end
+	local sN = sessions[player]
+	if sN then
+		local now = os.clock()
+		if sN.actAt and now - sN.actAt < 0.5 then return end
+		sN.actAt = now
+	end
 	player:SetAttribute("Activity", activity)
 	-- walking out of the city writes whatever a deferred pay() left unwritten
 	-- (a collect sweep), so the coins are on disk before the player is
@@ -3428,7 +3444,24 @@ do
 			if total < 1 then
 				return { ok = false, reason = tyOpen(t) and "nothing in the till yet" or "the stockroom is bare -- nothing sold" }
 			end
-			local got = pay(player, s, total, math.floor(t.bank / 20), "BizCollects")
+			-- MULTIPLIERS APPLY TO WHAT THE BUSINESS EARNED, NOT TO WHAT
+			-- ANOTHER PLAYER HANDED OVER.
+			--
+			-- t.bank is passive sales -- generated coins, and the thing 2x
+			-- Coins is meant to double. t.till is money a customer SPENT,
+			-- moved across 1:1 by `order` and `tip`. Running the whole sum
+			-- through pay() turned a transfer into minting: with a 2x pass or
+			-- during a server-wide boost, two players tipping each other's
+			-- restaurants roughly doubled the pair's balance per round trip,
+			-- at the ~8 tips a second the rate limiter allows.
+			--
+			-- So the earned half is multiplied and the transferred half is
+			-- credited flat.
+			local got = pay(player, s, t.bank + bonus, math.floor(t.bank / 20), "BizCollects")
+			if t.till > 0 then
+				s.data.Coins += t.till
+				got += t.till
+			end
 			t.bank, t.till = 0, 0
 			t.shift = os.time()
 			return done({ coins = got, bonus = bonus, full = full })
