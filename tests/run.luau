@@ -371,6 +371,64 @@ ok("owning everything fills the album", haveAll == totalAll,
 print(("  album is %d collectibles across %d sets"):format(total, #Config.Sets))
 
 ---------------------------------------------------------------------------
+section("Job mastery")
+---------------------------------------------------------------------------
+-- A MASTERY TRACK ON A `soon = true` JOB would show a progress bar that can
+-- never move, which is worse than not having the track at all.
+for _, m in Config.Mastery do
+	ok("mastery " .. m.id .. " has a stat", type(m.stat) == "string" and #m.stat > 0)
+	ok("mastery " .. m.id .. " has a unit", type(m.per) == "string" and #m.per > 0,
+		"the UI says `12 fares`, so every track needs its noun")
+	local j = Config.Job(m.id)
+	if j then
+		ok("mastery " .. m.id .. " job is playable", not j.soon,
+			"a track on a soon=true job is a bar that cannot move")
+	end
+end
+ok("there are tracks", #Config.Mastery >= 4)
+
+-- THE CURVE MUST BE STRICTLY INCREASING. A flat or dipping step would let one
+-- event grant two levels, and the claim loop pays one level per call.
+local prev = -1
+for lv = 0, Config.MasteryMax do
+	local need = Config.MasteryNeed(lv)
+	ok("mastery need rises at " .. lv, need > prev, ("%d after %d"):format(need, prev))
+	prev = need
+end
+
+ok("zero events is level 0", (Config.MasteryLevel(0)) == 0)
+ok("level 1 arrives early", (Config.MasteryLevel(Config.MasteryNeed(1))) == 1,
+	"the first level has to land in one session or the track reads as dead")
+ok("the cap holds", (Config.MasteryLevel(999999)) == Config.MasteryMax)
+
+-- `into` and `need` are progress WITHIN a level. If they were totals, a bar
+-- would read 1400/1900 at the START of a level and look nearly done.
+for _, n in { 0, 5, 50, 500 } do
+	local lv, into, need = Config.MasteryLevel(n)
+	if lv < Config.MasteryMax then
+		ok(("mastery progress at %d is within its level"):format(n),
+			into >= 0 and into < need, ("lv%d %d/%d"):format(lv, into, need))
+	end
+end
+
+-- EVERY LEVEL PAYS SOMETHING. A dead level teaches the player to stop looking.
+local titles2 = {}
+for _, t in Config.Titles do titles2[t.id] = true end
+for _, m in Config.Mastery do
+	for lv = 1, Config.MasteryMax do
+		local r = Config.MasteryReward(m, lv)
+		ok(("%s lv%d pays something"):format(m.id, lv),
+			(r.coins or 0) > 0 or r.title or r.furniture)
+		if r.title then
+			ok(("%s lv%d title is declared"):format(m.id, lv), titles2[r.title] == true, r.title)
+		end
+		if r.furniture then
+			ok(("%s lv%d furniture exists"):format(m.id, lv), Config.Furn(r.furniture) ~= nil, r.furniture)
+		end
+	end
+end
+
+---------------------------------------------------------------------------
 section("Pixel grid (static, against City.lua source)")
 ---------------------------------------------------------------------------
 -- EVERY HUD DIMENSION IS A MULTIPLE OF 4 (docs/PIXEL_UI.md section 1). With

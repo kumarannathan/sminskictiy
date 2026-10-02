@@ -59,6 +59,7 @@
           "CityMinimap":   { "$path": "game/CityMinimap.lua" },
           "CityHome":      { "$path": "game/CityHome.lua" },
           "CityFurnish":   { "$path": "game/CityFurnish.lua" },
+          "CityAlbum":     { "$path": "game/CityAlbum.lua" },
           "CityDress":     { "$path": "game/CityDress.lua" },
           "CityVenues":    { "$path": "game/CityVenues.lua" },
           "CityGuide":     { "$path": "game/CityGuide.lua" },

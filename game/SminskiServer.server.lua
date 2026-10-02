@@ -1926,6 +1926,8 @@ do
 			tasks = type(c.tasks) == "table" and c.tasks or {},
 			furn = type(c.furn) == "table" and c.furn or {},
 			placed = type(c.placed) == "table" and c.placed or {},
+			mastery = type(c.mastery) == "table" and c.mastery or {},
+			title = c.title,
 			sets = type(c.sets) == "table" and c.sets or {},
 			titles = type(c.titles) == "table" and c.titles or {},
 			tutorial = c.tutorial == true, tour = c.tour == true, apts = type(c.apts) == "table" and c.apts or {}, homeCar = c.homeCar, sleepReady = (os.time() - (tonumber(c.lastSleep) or 0)) > 20 * 3600,
@@ -2401,6 +2403,69 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "mastery" or action == "claimMastery" or action == "setTitle" then
+			-----------------------------------------------------------------
+			-- JOB MASTERY (docs/RELEASE.md 2.4).
+			--
+			-- THE LEVEL IS DERIVED, NEVER STORED. It is a pure function of a
+			-- counter pay() already keeps, so there is no second number to
+			-- drift out of step and no migration if the curve is ever tuned.
+			-- What IS stored is which level rewards have been CLAIMED, because
+			-- that is the thing a derivation cannot know.
+			-----------------------------------------------------------------
+			c.mastery = type(c.mastery) == "table" and c.mastery or {}
+			c.titles = type(c.titles) == "table" and c.titles or {}
+			local d = s.data
+			local lifetime = type(d.Stats) == "table" and d.Stats or {}
+			local function countFor(track)
+				return lifetime[track.stat] or d[track.stat] or 0
+			end
+
+			if action == "setTitle" then
+				-- "" clears it, which has to be allowed: a title you cannot
+				-- take off is a punishment for having earned it.
+				local want = tostring(arg or "")
+				if want ~= "" and not c.titles[want] then return { ok = false } end
+				c.title = want ~= "" and want or nil
+				save(player)
+				return { ok = true, city = public(s), data = publicData(s) }
+			end
+
+			if action == "mastery" then
+				local out = {}
+				for _, t in Config.Mastery do
+					local n = countFor(t)
+					local lv, into, need = Config.MasteryLevel(n)
+					table.insert(out, { id = t.id, name = t.name, per = t.per,
+						count = n, level = lv, into = into, need = need,
+						claimed = c.mastery[t.id] or 0,
+						ready = lv > (c.mastery[t.id] or 0) })
+				end
+				return { ok = true, tracks = out, title = c.title, titles = c.titles }
+			end
+
+			-- CLAIM. One level at a time, lowest first, so the rewards arrive
+			-- in the order they were earned and a player who was away for a
+			-- week sees each one rather than a single lump.
+			local t = Config.MasteryTrack(tostring(arg))
+			if not t then return { ok = false } end
+			local lv = Config.MasteryLevel(countFor(t))
+			local claimed = c.mastery[t.id] or 0
+			if claimed >= lv then return { ok = false, reason = "nothing to claim yet" } end
+			local next_ = claimed + 1
+			local r = Config.MasteryReward(t, next_)
+			c.mastery[t.id] = next_
+			if r.title then c.titles[r.title] = true end
+			if r.furniture then
+				c.furn = type(c.furn) == "table" and c.furn or {}
+				c.furn[r.furniture] = true
+			end
+			local got = (r.coins or 0) > 0 and pay(player, s, r.coins, 20, nil) or 0
+			save(player)
+			return { ok = true, track = t.id, level = next_, coins = got,
+				title = r.title, furniture = r.furniture,
+				more = lv > next_, city = public(s), data = publicData(s) }
+
 		elseif action == "place" or action == "unplace" or action == "clearRoom" then
 			-----------------------------------------------------------------
 			-- WHERE YOUR THINGS STAND (docs/RELEASE.md 2.2).

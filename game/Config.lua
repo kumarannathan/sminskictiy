@@ -1292,6 +1292,88 @@ Config.Titles = {
 	{ id = "Trick or Treat", name = "Trick or Treat" },
 }
 
+
+---------------------------------------------------------------------------
+-- JOB MASTERY (docs/RELEASE.md 2.4): each job levels on its own, which is
+-- where specialising lives.
+--
+-- IT RIDES COUNTERS THAT ALREADY EXIST. TaxiFares, Deliveries, Sweeps and
+-- CityHarvests have been incremented by pay() for months; mastery is a curve
+-- over them, not new tracking. Nothing has to be counted twice and a level
+-- cannot disagree with the number it came from.
+--
+-- ONLY JOBS YOU CAN ACTUALLY DO. A mastery track on a `soon = true` job
+-- would show a player a progress bar that can never move. The list below is
+-- deliberately short for the same reason the job browser should be.
+--
+-- THE CURVE IS QUADRATIC-ISH ON PURPOSE. Early levels come in a session so
+-- the track reads as alive straight away; later ones take real commitment,
+-- which is what makes a level 20 farmer mean something when somebody sees
+-- the title.
+---------------------------------------------------------------------------
+Config.Mastery = {
+	{ id = "taxi", name = "Taxi Driver", stat = "TaxiFares", per = "fares" },
+	{ id = "delivery", name = "Delivery Driver", stat = "Deliveries", per = "deliveries" },
+	{ id = "cleaner", name = "City Cleaner", stat = "Sweeps", per = "streets tidied" },
+	{ id = "farmhand", name = "Farm Hand", stat = "CityHarvests", per = "harvests" },
+	{ id = "cook", name = "Kitchen Cook", stat = "JobTasks", per = "orders" },
+	{ id = "tycoon", name = "Business Owner", stat = "TycoonServes", per = "customers" },
+}
+
+Config.MasteryMax = 25
+-- MASTERY TITLES ARE GENERATED, not typed out twice. Level 5 of a track pays
+-- its name and level 25 pays "Master <name>"; writing those twelve strings by
+-- hand is twelve chances for one to drift out of step with the track.
+for _, m in Config.Mastery do
+	table.insert(Config.Titles, { id = m.name, name = m.name })
+	table.insert(Config.Titles, { id = "Master " .. m.name, name = "Master " .. m.name })
+end
+
+-- TOTAL events needed to REACH level n. Level 1 is 3, level 5 about 60,
+-- level 25 about 1,900 -- roughly 8 units each for the first few and 150 for
+-- the last, so the early track moves in one sitting and the end of it does
+-- not.
+function Config.MasteryNeed(level)
+	if level <= 0 then return 0 end
+	return math.floor(3 * level * level + 2 * level)
+end
+
+-- level, into, need -- `into` and `need` are progress WITHIN the current
+-- level rather than totals, because a bar that starts at 1,400/1,900 reads
+-- as nearly finished when it is not.
+function Config.MasteryLevel(count)
+	count = math.max(0, math.floor(tonumber(count) or 0))
+	local lv = 0
+	while lv < Config.MasteryMax and count >= Config.MasteryNeed(lv + 1) do
+		lv += 1
+	end
+	if lv >= Config.MasteryMax then return lv, 0, 0 end
+	local base = Config.MasteryNeed(lv)
+	return lv, count - base, Config.MasteryNeed(lv + 1) - base
+end
+
+-- WHAT A LEVEL PAYS. Every fifth level gives something you can see or wear,
+-- and the rest pay coins, so the track never has a dead stretch -- a level
+-- that gives nothing teaches the player to stop looking at it.
+function Config.MasteryReward(track, level)
+	if level % 5 ~= 0 then
+		return { coins = 50 * level }
+	end
+	local tier = level // 5
+	if tier == 1 then return { coins = 250, title = track.name } end
+	if tier == 2 then return { coins = 500, furniture = "picM" } end
+	if tier == 3 then return { coins = 1000, furniture = "shelfBld" } end
+	if tier == 4 then return { coins = 2000, furniture = "couchP" } end
+	return { coins = 5000, title = "Master " .. track.name }
+end
+
+function Config.MasteryTrack(id)
+	for _, m in Config.Mastery do
+		if m.id == id then return m end
+	end
+	return nil
+end
+
 function Config.Set(id)
 	for _, st in Config.Sets do
 		if st.id == id then return st end

@@ -409,10 +409,22 @@ return function(deps)
 	---------------------------------------------------------------------------
 	local lots = Places.cityLots()
 	local marks = {}
+	-- ACTIONS THAT CAN FINISH A TASK. Rather than remembering to refresh the
+	-- goal widget at every call site that pays out -- and missing one -- the
+	-- remote wrapper notices for us.
+	local GOAL_DIRTY = {
+		sweep = true, harvest = true, sellCrops = true, buyFurn = true,
+		role = true, nap = true, claimSet = true, claimMastery = true,
+		buyOutfit = true, buySkin = true, buyApt = true, buyCar = true,
+	}
 	local function remote(action, arg)
 		if not deps.call then return nil end
 		local ok, res = pcall(deps.call, "City", action, arg)
-		return ok and res or nil
+		res = ok and res or nil
+		if res and res.ok and GOAL_DIRTY[action] and City.Album then
+			task.spawn(City.Album.refreshGoal)
+		end
+		return res
 	end
 	-- some city screens have their own RemoteFunction rather than an action on
 	-- the City one (the town roster reads every session, not just yours)
@@ -588,7 +600,7 @@ return function(deps)
 		dock.Name = "Dock"
 		dock.BackgroundTransparency = 1
 		dock.AnchorPoint = Vector2.new(0.5, 1)
-		dock.Size = UDim2.fromOffset(6 * Z.tile + 5 * Z.tileGap, Z.cell)
+		dock.Size = UDim2.fromOffset(7 * Z.tile + 6 * Z.tileGap, Z.cell)
 		dock.Parent = root
 		H.dock = dock
 		do
@@ -623,7 +635,10 @@ return function(deps)
 		tile("TOWN", "friends", C.coral, 3, function() City.openTown() end)
 		tile("PHONE", "bolt", C.sky, 4, function() if City.Events then City.Events.openPhone() end end)
 		H.mapBtn = tile("MAP", "pin", C.mint, 5, function() City.toggleMap() end)
-		tile("HOME", "house", C.paper2, 6, function()
+		tile("BOOK", "star", C.lav, 6, function()
+			if City.Album then City.Album.open() end
+		end)
+		tile("HOME", "house", C.paper2, 7, function()
 			if City.Home then City.Home.guide() UI.toast("follow the glowing path home!", C.mintDark) end
 		end)
 
@@ -749,6 +764,11 @@ return function(deps)
 		mh.Name = "MissionBar"
 		mh.Visible = false
 		H.mission = mh
+		-- THE GOAL WIDGET sits above the dock on the left, where the eye
+		-- already goes for the mission bar. It hides itself when there is
+		-- nothing left to do (Config.NextTask returns nil), which is the only
+		-- state in which an empty one is correct.
+		if City.Album then H.goal = City.Album.buildGoal(root) end
 		UI.icon(mcard, "star", { Size = UDim2.fromOffset(36, 36), Position = UDim2.fromOffset(8, 6), ZIndex = 3 })
 		H.missionText = UI.text(mcard, "", { Size = UDim2.new(1, -120, 0, 22), Position = UDim2.fromOffset(50, 5),
 			Font = Enum.Font.FredokaOne, TextSize = 17, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 3 })
@@ -2354,6 +2374,11 @@ return function(deps)
 	City.Furnish = require(mod("CityFurnish"))({
 		UI = UI, K = K, Config = Config, City = City, remote = remote, gui = gui, ctx = ctx,
 	})
+	-- the collection book, the mastery tracks and the goal widget: all three
+	-- are views over what the server already knows, so they share a module
+	City.Album = require(mod("CityAlbum"))({
+		UI = UI, Config = Config, City = City, remote = remote, gui = gui,
+	})
 	-- cafes, bakeries, noodle bars: order, sit, eat
 	local Venues = require(mod("CityVenues"))({
 		K = K, Build = Build, Models = Models, UI = UI, Audio = Audio, Places = Places,
@@ -3202,6 +3227,10 @@ return function(deps)
 		City.Sound.enter()
 		gui.Enabled = true
 		City.active = true
+		-- ASK WHAT TO DO NEXT AS SOON AS THE CITY IS UP. The widget is the
+		-- answer to "what do I do?", so it has to be there before the player
+		-- has had time to ask it.
+		if City.Album then City.Album.refreshGoal() end
 		Home.enter()
 		S.exitArmed = false
 		S.loading = true
