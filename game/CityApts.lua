@@ -126,7 +126,9 @@ return function(deps)
 	--
 	-- `cur` and `SPOTS` are read at call time, not captured, so one context
 	-- serves every room this module ever builds.
-	local CTX = { P = P, solid = solid, spot = spot }
+	-- `parent` is read at call time for the same reason `cur` and `SPOTS` are:
+	-- one context serves every room, and each one is a different Model.
+	local CTX = { P = P, solid = solid, spot = spot, parent = function() return cur end }
 	local FURN = setmetatable({}, { __index = function(t, k)
 		local fn = K.furn[k]
 		if not fn then return nil end

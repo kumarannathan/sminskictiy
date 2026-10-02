@@ -1168,7 +1168,50 @@ return function(deps)
 	-------------------------------------------------------------------- HOME --
 	-- (moved verbatim from CityApts' FURN; the geometry is unchanged so no
 	-- flat's layout moves. Only the drawing calls are parameterised.)
+	-----------------------------------------------------------------------
+	-- THE INTERIORS PASS (docs/RELEASE.md section 3).
+	--
+	-- Every builder below now tries a CURATED MESH first and falls back to
+	-- the primitives it has always used. One helper, applied at the bottom of
+	-- the kit, improves every room in the game at once -- because `F.sofa` is
+	-- called from flats, lobbies, cafes and shop back-rooms, and none of them
+	-- had to change.
+	--
+	-- THE FALLBACK IS NOT A CONSOLATION. A place file without the Inventory
+	-- folder still builds the whole city, which is the rule the kit has
+	-- followed since the first mesh landed (docs/INVENTORY.md). The primitive
+	-- version stays maintained, not left to rot.
+	--
+	-- INTERACTION POINTS ARE BUILT EITHER WAY. c.spot() is gameplay -- the
+	-- bed you can nap in, the sofa you can sit on -- so it happens outside
+	-- this branch. A room that looked better but could not be used would be
+	-- a straight downgrade.
+	--
+	-- `width` is passed so a mesh is scaled to the footprint the layout
+	-- already reserved. Dropping a 10.7-stud couch into a slot measured for
+	-- 12 leaves a gap; scaling it to the slot keeps every room's arithmetic
+	-- true.
+	-----------------------------------------------------------------------
+	function F.mesh(c, name, cf, opts)
+		local m = K.place(name, cf, opts)
+		if not m then return false end
+		-- THE ROOM OWNS IT. A flat is one Model built on approach and
+		-- destroyed on exit, so furniture parented anywhere else outlives the
+		-- room it belongs to and piles up in the world.
+		--
+		-- `c.parent` is a FUNCTION, not a model: CityApts rebuilds its `cur`
+		-- for every room, so capturing the value once would put every later
+		-- room's furniture inside the first room's model.
+		local into = (c.parent and c.parent()) or K.cur
+		if into then m.Parent = into end
+		return true
+	end
+
 	function F.bed(c, cf, col)
+		if F.mesh(c, "bed_double_A", cf, { width = 9 }) then
+			c.spot(cf * CFrame.new(5.6, 0, 0), "YOUR BED", "a little lie down", "NAP", "heart", { sit = cf * CFrame.new(0, 3.4, 1), lines = { "zzz... best nap in town", "five more minutes", "you feel rested" } })
+			return
+		end
 		c.solid(c.P(V(9, 2, 13), cf * CFrame.new(0, 1, 0), rgb(176, 136, 100), WOODM))
 		c.P(V(8.6, 1.4, 12.4), cf * CFrame.new(0, 2.6, 0), rgb(250, 248, 242), FABRIC)
 		c.P(V(8.8, 1.5, 8), cf * CFrame.new(0, 2.8, 2.2), col, FABRIC)
@@ -1177,6 +1220,10 @@ return function(deps)
 		c.spot(cf * CFrame.new(5.6, 0, 0), "YOUR BED", "a little lie down", "NAP", "heart", { sit = cf * CFrame.new(0, 3.4, 1), lines = { "zzz... best nap in town", "five more minutes", "you feel rested" } })
 	end
 	function F.sofa(c, cf, col)
+		if F.mesh(c, "couch", cf, { width = 12 }) then
+			c.spot(cf * CFrame.new(0, 0, -3.4), "THE SOFA", "put your feet up", "SIT", "heart", { sit = cf * CFrame.new(0, 2.3, -0.2) })
+			return
+		end
 		c.solid(c.P(V(12, 2, 4.6), cf * CFrame.new(0, 1.2, 0), col, FABRIC))
 		c.P(V(12, 3.6, 1.2), cf * CFrame.new(0, 3.2, 1.8), col, FABRIC)
 		for _, sx in { -5.6, 5.6 } do c.P(V(1.2, 3, 4.6), cf * CFrame.new(sx, 2.4, 0), shade(col, 0.08), FABRIC) end
@@ -1184,10 +1231,12 @@ return function(deps)
 		c.spot(cf * CFrame.new(0, 0, -3.4), "THE SOFA", "put your feet up", "SIT", "heart", { sit = cf * CFrame.new(0, 2.3, -0.2) })
 	end
 	function F.rug(c, cf, w, d, col)
+		if F.mesh(c, w > 9 and "rug_rectangle_A" or "rug_oval_A", cf, { width = w }) then return end
 		c.P(V(w, 0.12, d), cf * CFrame.new(0, 0.07, 0), col, FABRIC, { noShadow = true })
 		c.P(V(w - 2, 0.14, d - 2), cf * CFrame.new(0, 0.08, 0), tint(col, 0.3), FABRIC, { noShadow = true })
 	end
 	function F.coffee(c, cf)
+		if F.mesh(c, "table_low", cf, { width = 6 }) then return end
 		c.P(V(6, 0.5, 3.4), cf * CFrame.new(0, 1.6, 0), rgb(196, 156, 116), WOODM)
 		for _, sx in { -2.4, 2.4 } do c.P(V(0.5, 1.4, 2.6), cf * CFrame.new(sx, 0.7, 0), Cc.ink, METAL) end
 		fblob(c, V(1.2, 1, 1.2), cf * CFrame.new(1.4, 2.3, 0), rgb(240, 150, 170))
@@ -1219,29 +1268,34 @@ return function(deps)
 		c.spot(cf * CFrame.new(len / 2 + 2.4, 0, 4), "THE FRIDGE", "anything good in there?", "SNACK", "bag", { emote = "cheer", lines = { "leftover noodles. score.", "one (1) suspicious yoghurt", "you made a tiny sandwich", "just checking. again." } })
 	end
 	function F.wardrobe(c, cf)
+		if F.mesh(c, "cabinet_medium_decorated", cf, { height = 8 }) then return end
 		c.solid(c.P(V(8, 11, 3), cf * CFrame.new(0, 5.5, 0), rgb(176, 136, 100), WOODM))
 		c.P(V(0.2, 10, 0.2), cf * CFrame.new(0, 5.5, 1.6), Cc.ink)
 		for _, sx in { -0.8, 0.8 } do fblob(c, V(0.5, 0.5, 0.5), cf * CFrame.new(sx, 5.4, 1.7), Cc.gold, METAL) end
 		c.spot(cf * CFrame.new(0, 0, 4.4), "WARDROBE", "everything you own", "DRESS UP", "shirt", { ui = "outfits" })
 	end
 	function F.plant(c, cf, s)
+		if F.mesh(c, "cactus_medium_A", cf, { height = 3.5 * (s or 1) }) then return end
 		s = s or 1
 		fcyl(c, 2.2 * s, 2.2 * s, cf * CFrame.new(0, 1.1 * s, 0), rgb(226, 150, 118))
 		fblob(c, V(4, 5, 4) * s, cf * CFrame.new(0, 4.4 * s, 0), Cc.leaf)
 		fblob(c, V(3, 3.4, 3) * s, cf * CFrame.new(0.8 * s, 6 * s, 0.4 * s), Cc.leaf3)
 	end
 	function F.lamp(c, cf)
+		if F.mesh(c, "lamp_standing", cf, { height = 7 }) then return end
 		fcyl(c, 0.3, 8, cf * CFrame.new(0, 4, 0), Cc.ink, METAL)
 		fcyl(c, 1.8, 0.4, cf * CFrame.new(0, 0.2, 0), Cc.ink, METAL)
 		fblob(c, V(3, 2.4, 3), cf * CFrame.new(0, 8.4, 0), rgb(255, 236, 200), NEON, { noShadow = true })
 	end
 	function F.shelf(c, cf)
+		if F.mesh(c, "shelf_A_big", cf, { height = 8 }) then return end
 		c.solid(c.P(V(10, 10, 2), cf * CFrame.new(0, 5, 0), rgb(176, 136, 100), WOODM))
 		for row = 0, 2 do
 			for k = 0, 3 do c.P(V(1.8, 2.2, 1.4), cf * CFrame.new(-3.4 + k * 2.2, 2 + row * 3, 0.5), K.FLOWER_COLS[(row + k) % 5 + 1]) end
 		end
 	end
 	function F.desk(c, cf)
+		if F.mesh(c, "table_medium", cf, { width = 8 }) then return end
 		c.P(V(9, 0.5, 4), cf * CFrame.new(0, 3.4, 0), rgb(236, 226, 206), WOODM)
 		for _, sx in { -4, 4 } do c.P(V(0.5, 3.2, 3.6), cf * CFrame.new(sx, 1.6, 0), Cc.ink, METAL) end
 		c.P(V(4.6, 2.8, 0.3), cf * CFrame.new(0, 5.4, -1), Cc.ink, SMOOTH)

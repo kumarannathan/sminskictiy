@@ -262,3 +262,34 @@ is in the **Halloween** kit, not the furniture one. The test had checked that
 a mesh name appeared *somewhere* in `docs/KITS.md`, so naming a mesh from an
 unimported kit passed cleanly. It now checks the specific kit section. A kit
 you have not imported is not a mesh you have.
+
+## The interiors pass (2026-10-01)
+
+`CityKit`'s furniture builders (`F.bed`, `F.sofa`, `F.rug`, `F.coffee`,
+`F.lamp`, `F.shelf`, `F.plant`, `F.wardrobe`, `F.desk`) now try a curated mesh
+first via `F.mesh` and fall back to the primitives they always used.
+
+One helper improves **every room in the game at once**, because those builders
+are called from flats, lobbies, cafés and shop back-rooms and none of them had
+to change.
+
+Three rules it follows:
+
+- **The fallback is not a consolation.** A place file without the Inventory
+  folder still builds the whole city. The primitive version stays maintained.
+- **Interaction points are built either way.** `c.spot()` is gameplay — the
+  bed you nap in, the sofa you sit on — so it happens outside the mesh branch.
+  A room that looked better but could not be used would be a downgrade.
+- **`width`/`height` scale the mesh to the slot the layout already reserved.**
+  Dropping a 10.7-stud couch into a space measured for 12 leaves a gap.
+
+`c.parent` is a **function**, not a model. `CityApts` rebuilds its `cur` for
+every room it draws, so capturing the value once would parent every later
+room's furniture inside the first room's model.
+
+### Verifying this in Studio
+
+Screen captures are not usable for Edit-mode checks here: the viewport camera
+does not follow a scripted `CFrame`, so a capture shows wherever the user last
+navigated. Verify by measuring instead — count `MeshPart`s in the built room
+and assert every name resolves with its `H` and `Curated` attributes.
