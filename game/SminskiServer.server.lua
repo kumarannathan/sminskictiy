@@ -1925,6 +1925,7 @@ do
 			farm = type(c.farm) == "table" and c.farm or nil,
 			tasks = type(c.tasks) == "table" and c.tasks or {},
 			furn = type(c.furn) == "table" and c.furn or {},
+			placed = type(c.placed) == "table" and c.placed or {},
 			sets = type(c.sets) == "table" and c.sets or {},
 			titles = type(c.titles) == "table" and c.titles or {},
 			tutorial = c.tutorial == true, tour = c.tour == true, apts = type(c.apts) == "table" and c.apts or {}, homeCar = c.homeCar, sleepReady = (os.time() - (tonumber(c.lastSleep) or 0)) > 20 * 3600,
@@ -2400,6 +2401,56 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "place" or action == "unplace" or action == "clearRoom" then
+			-----------------------------------------------------------------
+			-- WHERE YOUR THINGS STAND (docs/RELEASE.md 2.2).
+			--
+			-- A placement is { id, x, z, r } in ROOM-LOCAL studs, never world
+			-- coordinates. The interior is rebuilt at a different world frame
+			-- every time it streams in, so a world position saved today is a
+			-- sofa in the garden tomorrow.
+			--
+			-- THE CAP IS ON PLACED, NOT OWNED. Every placed object is a
+			-- streamed Model and a hundred in one room is a frame-rate
+			-- problem for whoever walks in -- but capping what you may OWN
+			-- would make the album uncompletable, so the two are separate
+			-- numbers and this is the one that bites.
+			-----------------------------------------------------------------
+			c.placed = type(c.placed) == "table" and c.placed or {}
+			c.furn = type(c.furn) == "table" and c.furn or {}
+
+			if action == "clearRoom" then
+				c.placed = {}
+				save(player)
+				return { ok = true, city = public(s), data = publicData(s) }
+			end
+
+			if action == "unplace" then
+				local i = math.floor(tonumber(arg) or 0)
+				if not c.placed[i] then return { ok = false } end
+				table.remove(c.placed, i)
+				save(player)
+				return { ok = true, city = public(s), data = publicData(s) }
+			end
+
+			-- PLACE
+			if type(arg) ~= "table" then return { ok = false } end
+			local id = tostring(arg.id)
+			if not c.furn[id] then return { ok = false, reason = "you do not own that" } end
+			if #c.placed >= Config.FurniturePlaced then
+				return { ok = false, reason = "that is all this room will hold" }
+			end
+			-- CLAMPED, NOT TRUSTED. The client sends where the player dropped
+			-- it; a client that sends 10,000 would otherwise park a wardrobe
+			-- outside the building where nobody can reach it to move it back.
+			local HALF_W, HALF_D = 28, 20
+			local x = math.clamp(tonumber(arg.x) or 0, -HALF_W, HALF_W)
+			local z = math.clamp(tonumber(arg.z) or 0, -HALF_D, HALF_D)
+			local r = math.floor((tonumber(arg.r) or 0) % 360 / 15 + 0.5) * 15
+			table.insert(c.placed, { id = id, x = x, z = z, r = r })
+			save(player)
+			return { ok = true, index = #c.placed, city = public(s), data = publicData(s) }
+
 		elseif action == "buyFurn" or action == "album" or action == "claimSet" then
 			-----------------------------------------------------------------
 			-- FURNITURE, THE ALBUM, AND SET REWARDS (docs/RELEASE.md 2.2).

@@ -2341,7 +2341,19 @@ return function(deps)
 		K = K, Build = Build, Models = Models, UI = UI, Audio = Audio, ctx = ctx, Places = Places,
 		player = player, remote = remote, earned = earned, City = City, S = S, H = H, gui = gui,
 	})
+	-- ONE PLACE TO SAY SOMETHING SHORT. CityFurnish and anything else that
+	-- needs to report a refusal ("that is out of season") goes through here
+	-- rather than each module inventing its own banner.
+	function City.toast(msg, col)
+		UI.toast(msg, col or C.coral)
+	end
 	City.Home = Home
+	-- buying furniture and arranging it. Separate from CityHome on purpose:
+	-- Home owns the shell and is already 870 lines, and furnishing is its own
+	-- UI, its own input mode and its own server calls.
+	City.Furnish = require(mod("CityFurnish"))({
+		UI = UI, K = K, Config = Config, City = City, remote = remote, gui = gui, ctx = ctx,
+	})
 	-- cafes, bakeries, noodle bars: order, sit, eat
 	local Venues = require(mod("CityVenues"))({
 		K = K, Build = Build, Models = Models, UI = UI, Audio = Audio, Places = Places,

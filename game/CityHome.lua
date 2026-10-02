@@ -440,6 +440,7 @@ return function(deps)
 			end },
 			{ id = "bed", at = V(20, 0, 7), title = "COZY BED", sub = "a nap once a day = +50 coins", btn = "SLEEP", icon = "clock" },
 			{ id = "wardrobe", at = V(26, 0, 9), title = "WARDROBE", sub = "try on your outfits", btn = "DRESS", icon = "shirt" },
+			{ id = "furnish", at = V(14, 0, 14), title = "FURNISH", sub = "buy things and arrange them", btn = "OPEN", icon = "house" },
 			{ id = "lamp", at = V(26, 0, 17), title = "LAMP", sub = "click", btn = "LIGHT", icon = "bolt" },
 			{ id = "piano", at = V(-24, 0, 14), title = "PIANO", sub = "play a little tune", btn = "PLAY", icon = "star" },
 			{ id = "computer", at = V(-6, 0, 14), title = "COMPUTER", sub = "the city map + fast travel", btn = "OPEN", icon = "pin" },
@@ -510,6 +511,17 @@ return function(deps)
 		end)
 	end
 	function ACT.wardrobe() UI.openShopTab("outfits") end
+	-- THE SHOP CLOSES ITSELF WHEN YOU PICK SOMETHING TO PLACE. Leaving it up
+	-- would hide the room you are trying to arrange, which is the one thing
+	-- you need to see.
+	function ACT.furnish()
+		if not City.Furnish then return end
+		City.Furnish.openShop(gui, function()
+			if City.Furnish.isPlacing() then
+				UI.toast("walk where you want it, then tap PLACE", C.mintDark)
+			end
+		end)
+	end
 	function ACT.lamp(it)
 		it.lampLight.Enabled = not it.lampLight.Enabled
 		it.lampShade.Material = it.lampLight.Enabled and NEON or MATTE
@@ -560,6 +572,11 @@ return function(deps)
 		hrp.AssemblyLinearVelocity = Vector3.zero
 		hrp.CFrame = it.f * CFrame.new(0, 3.4, -ID / 2 + 6) * CFrame.Angles(0, math.pi, 0)
 		Home.inside = i
+		-- HAND THE ROOM TO CityFurnish. It needs the Model to parent to and
+		-- the frame to resolve room-local placements against; it is given
+		-- both here rather than reaching into `interiors`, so it never has to
+		-- know how a house is built.
+		if City.Furnish then City.Furnish.attach(it.m, it.f, ctx.data and ctx.data.City) end
 		if City.Sound then City.Sound.door(frontDoor(lots[i])) end
 		player.CameraMaxZoomDistance = 22
 		indoorLook(true)
@@ -568,6 +585,7 @@ return function(deps)
 		if Home.tut and Home.tut.step <= 2 and i == myHouse() then Home.setStep(3) end
 	end
 	function Home.goOut()
+		if City.Furnish then City.Furnish.detach() end
 		local i = Home.inside
 		local hrp = myChar()
 		if not i or not hrp then return end
@@ -802,6 +820,11 @@ return function(deps)
 	end
 
 	function Home.update(dt, t, me)
+		-- the ghost follows the player, so it only needs updating while
+		-- somebody is actually placing something
+		if City.Furnish and City.Furnish.isPlacing() and me then
+			City.Furnish.update(me.Position)
+		end
 		scanOwners(dt)
 		local hrp, hum = myChar()
 		-- sitting on the sofa (stand up by walking)
