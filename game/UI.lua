@@ -269,6 +269,19 @@ return function(Config, Models, Audio, ctx)
 		local col = opts.color or C.mint
 		local size = opts.size or UDim2.fromOffset(200, 56)
 		local depth = opts.depth or T.depth
+		-- THE FACE IS WHAT YOU TAP, AND IT IS `depth` SHORTER THAN THE HOLDER.
+		--
+		-- `face.Size` is (1, -depth) below, so a button declared 48 tall has a
+		-- 40px hit area -- under the 44 floor, on 43 buttons across the game.
+		-- An audit found them one at a time; fixing them one at a time would
+		-- have been 43 edits and 43 chances to break a layout.
+		--
+		-- The floor lives here instead, in the one place every button is
+		-- built. Only buttons that were ALREADY too small grow, and they grow
+		-- to exactly the minimum, so nothing that was fine moves at all.
+		if size.Y.Offset > 0 and size.Y.Offset - depth < T.tap.min then
+			size = UDim2.new(size.X.Scale, size.X.Offset, size.Y.Scale, T.tap.min + depth)
+		end
 		local kind = opts.pill and "pill" or "key"
 		local faceH = size.Y.Offset > 0 and size.Y.Offset - depth or 50
 		-- INTEGER, NOT DERIVED FROM A RADIUS. This used to compute a

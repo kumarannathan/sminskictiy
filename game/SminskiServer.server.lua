@@ -516,9 +516,22 @@ local function award(player, s, stats, elapsed, ranked)
 		if v ~= v or v == math.huge or v < 0 then return 0 end
 		return v
 	end
-	local maxDistance = elapsed * Config.MaxSpeed * 1.4 + 100
+	-- THE FLAT CONSTANTS PAID FOR A RUN THAT NEVER HAPPENED.
+	--
+	-- These caps scale with server-measured elapsed time, which is right, but
+	-- the `+ 100` and `+ 50` were floors that applied even at elapsed = 0. A
+	-- StartRun -> EndRun loop at one round trip per second was therefore paid
+	-- about 143 coins a second -- roughly 8,500 a minute, against the ~50 a
+	-- minute the taxi job is balanced around, and then multiplied again by
+	-- passes and boosts. It undercut all eight coin products.
+	--
+	-- The allowances are now proportional to elapsed time too, so a run that
+	-- did not happen is worth nothing. A genuine short run still clears its
+	-- own first second comfortably.
+	local grace = math.min(1, elapsed)
+	local maxDistance = elapsed * Config.MaxSpeed * 1.4 + 100 * grace
 	local distance = math.min(num(stats.distance), maxDistance)
-	local maxCoins = distance * 0.35 * 2 + 50 -- dense trails, 2x powerup
+	local maxCoins = distance * 0.35 * 2 + 50 * grace -- dense trails, 2x powerup
 	local coins = math.floor(math.min(num(stats.coins), maxCoins))
 	local nearMisses = math.floor(math.min(num(stats.nearMisses), distance / 8 + 5))
 	local maxScore = (distance * 0.5 + coins * 10 + nearMisses * 25 + distance) * 8
@@ -624,7 +637,13 @@ rf("EndRun").OnServerInvoke = function(player, runId, stats)
 	--                allowance both still rank -- the board excludes Robux
 	--                assistance, not effort.
 	local robuxRevived = (run.freeRevives or 0) < (run.freeRobux or 0)
-	return award(player, s, stats, os.clock() - run.start, run.ranked and not robuxRevived)
+	-- A RUN HAS TO HAVE LASTED. Even with proportional caps, a tight
+	-- StartRun/EndRun loop is pure overhead on the server and spams the news
+	-- feed to every client once per iteration. Nothing real finishes in under
+	-- two seconds -- the countdown alone is longer than that.
+	local ran = os.clock() - run.start
+	if ran < 2 then return nil end
+	return award(player, s, stats, ran, run.ranked and not robuxRevived)
 end
 
 rf("BuyUpgrade").OnServerInvoke = function(player, id)
@@ -725,7 +744,13 @@ rf("ClaimDaily").OnServerInvoke = function(player)
 	d.Coins += out.coins
 	d.TotalCoins += out.coins
 	if gift.capsule then
-		out.capsule = rollCapsule(player, s)
+		-- GATED LIKE EVERY OTHER CAPSULE PATH. OpenCapsule and the claw both
+		-- check this; the daily-login gift did not, so flipping
+		-- CapsulesArePaid left a route that still handed a restricted player
+		-- a random item.
+		if not (Config.CapsulesArePaid and paidRandomRestricted(player)) then
+			out.capsule = rollCapsule(player, s)
+		end
 	end
 	if L.streak >= 7 and day == 7 then feed(player.DisplayName .. " hit a " .. L.streak .. "-day streak!", "best") end
 	task.spawn(save, player)
@@ -968,6 +993,12 @@ rf("Garden").OnServerInvoke = function(player, action, a1, a2)
 	local i = tonumber(a1)
 	if action == "plant" then
 		local def = type(a2) == "string" and Config.Seed(a2)
+		-- INTEGER, OR IT IS NOT A PLOT. `tonumber` happily returns 1.5, which
+		-- passed every bound here, took the seed money and wrote g.plots["1.5"]
+		-- -- a plot the client never draws and harvestAll never walks, so it is
+		-- invisible and permanent. It is also the one unbounded key path into
+		-- the save: enough of them and the player's data stops fitting.
+		if i and i ~= math.floor(i) then return { ok = false } end
 		if not def or not i or i < 1 or i > plotCount(g) or g.plots[tostring(i)] then return { ok = false } end
 		if d.Level < (def.level or 1) then return { ok = false, reason = "level", level = def.level } end
 		if d.Coins < def.cost then return { ok = false, reason = "coins" } end

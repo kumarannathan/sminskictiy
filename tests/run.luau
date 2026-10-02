@@ -606,6 +606,12 @@ if zblock then
 end
 
 local ui = fs.readFile("game/UI.lua")
+-- THE TAP FLOOR LIVES IN THE BUTTON CONSTRUCTOR, not at 43 call sites. If
+-- somebody removes it, every undersized button silently goes back to being
+-- untappable on a phone and nothing else complains.
+ok("UI.button enforces the tap floor",
+	ui:find("size.Y.Offset - depth < T.tap.min", 1, true) ~= nil,
+	"the pressable face is `depth` shorter than the declared size")
 ok("skin images are pixelated", ui:find("ResampleMode = Enum.ResamplerMode.Pixelated") ~= nil,
 	"without this every glyph is bilinear-blurred and the style collapses")
 ok("canvas scale is quantised", ui:find("local function quantise") ~= nil)

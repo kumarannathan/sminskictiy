@@ -774,8 +774,19 @@ ctx.openCapsule = function()
 		if res and res.ok then
 			UI.playCapsule(res)
 			task.delay(1.6, function() setData(res.data) end)
+		elseif res and res.reason == "restricted" then
+			-- THE HANDLER FOR THIS EXISTED, IN THE WRONG FUNCTION. It was
+			-- written into shopResult, which openCapsule does not call, so
+			-- the one button that can actually return "restricted" was the
+			-- one with no path for it -- a dead tap, forever, for every
+			-- restricted player.
+			UI.toast("capsules aren't available on this account — everything else still is", UI.C.inkSoft)
 		elseif res and res.reason == "coins" then
 			UI.toast("not enough coins")
+		elseif res then
+			-- any other refusal still says something: a button that does
+			-- nothing is indistinguishable from a broken game
+			UI.toast(res.reason or "couldn't open that right now")
 		end
 	end)
 end
