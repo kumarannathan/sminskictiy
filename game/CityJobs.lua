@@ -249,7 +249,10 @@ return function(deps)
 			for _, r in rows do r.row:Destroy() end
 			table.clear(rows)
 			local i = 0
-			for _, def in Config.Jobs do
+			-- Config.PlayableJobs, not Config.Jobs: a browser that is half
+			-- "coming soon" reads as an unfinished game, and this is the
+			-- first screen a new player opens after picking a role.
+			for _, def in Config.PlayableJobs() do
 				if def.cat == c then
 					i += 1
 					rows[def.id] = jobCard(i, def)

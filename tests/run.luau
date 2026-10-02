@@ -479,6 +479,28 @@ ok("the jackpot stays rare", (seen[jackIdx] or 0) < spins * 0.1,
 	("%d of %d"):format(seen[jackIdx] or 0, spins))
 
 ---------------------------------------------------------------------------
+section("Job browser")
+---------------------------------------------------------------------------
+local playable = Config.PlayableJobs()
+ok("there are jobs to offer", #playable >= 6, tostring(#playable))
+if not Config.ShowUnfinishedJobs then
+	for _, j in playable do
+		ok("offered job " .. j.id .. " is finished", not j.soon,
+			"a NOT OPEN YET row on the first screen a new player sees")
+	end
+	ok("unfinished jobs are hidden, not deleted", #playable < #Config.Jobs,
+		"flipping ShowUnfinishedJobs must bring them all back")
+end
+-- EVERY ROLE MUST SPAWN YOU AT A JOB THAT IS ACTUALLY OFFERED. A role
+-- pointing at a hidden job would drop a new player beside a building whose
+-- job does not appear in the browser they were just told to open.
+local offered = {}
+for _, j in playable do offered[j.id] = true end
+for _, r in Config.Roles do
+	ok("role " .. r.id .. " job is offered", offered[r.job] == true, r.job)
+end
+
+---------------------------------------------------------------------------
 section("Daily login")
 ---------------------------------------------------------------------------
 ok("there is a full week", #Config.LoginDays == 7, tostring(#Config.LoginDays))

@@ -1573,6 +1573,30 @@ function Config.LoginStreak(lastDay, today)
 	return true, 1                                        -- broken, start again
 end
 
+-- SHOW UNFINISHED JOBS, OR HIDE THEM?
+--
+-- Seven of the fifteen jobs are `soon = true` -- no gameplay behind them,
+-- just a row that says NOT OPEN YET. A browser that is half "coming soon"
+-- reads as an unfinished game, and it is the first screen a new player opens
+-- after picking a role (docs/RELEASE.md section 1).
+--
+-- False hides them entirely, so the list is eight jobs that all work. Set it
+-- true to show them again as a roadmap -- nothing is deleted, and the moment
+-- a job loses its `soon` flag it appears either way.
+--
+-- This is a product decision, not a technical one: it is one line precisely
+-- so it can be argued about and flipped without touching any code.
+Config.ShowUnfinishedJobs = false
+
+-- The jobs a player should actually be offered.
+function Config.PlayableJobs()
+	local out = {}
+	for _, j in Config.Jobs do
+		if Config.ShowUnfinishedJobs or not j.soon then table.insert(out, j) end
+	end
+	return out
+end
+
 function Config.Set(id)
 	for _, st in Config.Sets do
 		if st.id == id then return st end
