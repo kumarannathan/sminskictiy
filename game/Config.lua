@@ -1120,7 +1120,7 @@ Config.Furniture = {
 	{ id = "rugSa", inv = "rug_rectangle_stripes_A", name = "Striped Rug", cat = "rug", price = 220 },
 	{ id = "rugSb", inv = "rug_rectangle_stripes_B", name = "Striped Rug II", cat = "rug", price = 220 },
 	-- WALLS
-	{ id = "picS", inv = "pictureframe_small_A", name = "Small Frame", cat = "wall", price = 70 },
+	{ id = "picSa", inv = "pictureframe_small_A", name = "Small Frame", cat = "wall", price = 70 },
 	{ id = "picSb", inv = "pictureframe_small_B", name = "Small Frame II", cat = "wall", price = 70 },
 	{ id = "picSc", inv = "pictureframe_small_C", name = "Small Frame III", cat = "wall", price = 70 },
 	{ id = "picM", inv = "pictureframe_medium", name = "Picture Frame", cat = "wall", price = 120 },
@@ -1208,6 +1208,141 @@ function Config.SeasonItem(id)
 	return nil
 end
 
+---------------------------------------------------------------------------
+-- THE ALBUM: sets, pages, and the number a player is actually chasing.
+-- docs/RELEASE.md section 2.2 -- the spine the rest of the reward layer
+-- hangs off.
+--
+-- WHY THIS EXISTS. A reward with nowhere to be recorded is a number that
+-- scrolls past. The capsule system today can only yield one of 15
+-- characters, which is why rolling stops mattering after about twenty pulls:
+-- the pool is exhaustible and then every roll is a refund. A set turns an
+-- item you already own into 6 of 8, which is a different feeling entirely.
+--
+-- A SET IS A VIEW OVER THINGS THAT ALREADY EXIST. It owns no items of its
+-- own. `kind` says which table the ids live in, so a set cannot invent a
+-- collectible and cannot drift out of step with what is really droppable --
+-- and the tests walk every id in every set back to its source table.
+--
+-- COMPLETION PAYS SOMETHING THAT CANNOT DROP. That is the whole point: the
+-- only way to hold it is to have finished, which is what makes it worth
+-- showing to somebody. If a set reward were also a drop, finishing the set
+-- would be the slow way to get it.
+---------------------------------------------------------------------------
+Config.Sets = {
+	-- CHARACTERS, split by how you actually get them rather than
+	-- alphabetically: the four commons are a first-week set, and the
+	-- epics are a long haul.
+	{ id = "starters", name = "First Four", kind = "character", page = "sminski",
+		blurb = "The four you meet first.",
+		items = { "Glow", "Blush", "Sky", "Lemon" },
+		reward = { coins = 300, title = "New Resident" } },
+	{ id = "pastels", name = "Pastel Set", kind = "character", page = "sminski",
+		blurb = "Softer, and harder to find.",
+		items = { "Lavender", "Mint", "Peach", "Sakura", "Aqua" },
+		reward = { coins = 800, title = "Collector" } },
+	{ id = "nightfall", name = "Nightfall", kind = "character", page = "sminski",
+		blurb = "The ones that glow in the dark.",
+		items = { "Ghost", "Night", "Galaxy", "Ember" },
+		reward = { coins = 1500, title = "Night Owl" } },
+
+	-- FURNITURE, grouped as a room rather than as a category, because
+	-- "finish the living room" is a thing a player can picture and
+	-- "collect six seats" is not.
+	{ id = "livingroom", name = "Living Room", kind = "furniture", page = "home",
+		blurb = "Somewhere to sit and something to put your tea on.",
+		items = { "couch", "armchair", "tableL", "rugRa", "lampS", "picM" },
+		reward = { coins = 400, furniture = "couchP" } },
+	{ id = "bedroom", name = "Bedroom", kind = "furniture", page = "home",
+		blurb = "A bed, a lamp, and somewhere for your things.",
+		items = { "bedD", "cabS", "lampT", "rugOa", "picSa", "pillowA" },
+		reward = { coins = 400, furniture = "bedDb" } },
+	{ id = "study", name = "The Study", kind = "furniture", page = "home",
+		blurb = "For people who own more books than shelves.",
+		items = { "shelfAb", "shelfBl", "books", "book", "chairC", "tableM" },
+		reward = { coins = 500, furniture = "shelfBld" } },
+	{ id = "greenery", name = "Greenery", kind = "furniture", page = "home",
+		blurb = "Nothing here needs watering.",
+		items = { "cacSa", "cacSb", "cacMa", "cacMb" },
+		reward = { coins = 250 } },
+
+	-- SEASONAL. The set is only completable during its month, which is the
+	-- entire point: it says "you were here in October" in a way a coin
+	-- balance never can.
+	{ id = "spooky", name = "Spooky Month", kind = "season", page = "limited",
+		blurb = "October only. Gone on the first.", season = "halloween",
+		items = { "h_pumpkin", "h_pumpkinY", "h_lantern", "h_grave", "h_candles", "h_tree" },
+		reward = { coins = 1000, title = "Trick or Treat" } },
+}
+
+-- PAGES group sets the way a player thinks about them, and are the thing the
+-- album's "47 / 100" counts across.
+Config.AlbumPages = {
+	{ id = "sminski", name = "SMINSKI", blurb = "Every one you have found." },
+	{ id = "home", name = "AT HOME", blurb = "The rooms you have finished." },
+	{ id = "limited", name = "LIMITED", blurb = "Here and then gone." },
+}
+
+-- TITLES are the cheapest social flex there is (docs/RELEASE.md 2.5) and
+-- several sets pay one, so they are declared in one place rather than being
+-- whatever string the set happened to use.
+Config.Titles = {
+	{ id = "New Resident", name = "New Resident" },
+	{ id = "Collector", name = "Collector" },
+	{ id = "Night Owl", name = "Night Owl" },
+	{ id = "Trick or Treat", name = "Trick or Treat" },
+}
+
+function Config.Set(id)
+	for _, st in Config.Sets do
+		if st.id == id then return st end
+	end
+	return nil
+end
+
+-- WHICH POOL AN ITEM ID LIVES IN. One lookup, so a set can never be checked
+-- against the wrong table.
+function Config.SetItemExists(kind, id)
+	if kind == "character" then
+		for _, c in Config.Characters do if c.id == id then return true end end
+	elseif kind == "furniture" then
+		return Config.Furn(id) ~= nil
+	elseif kind == "season" then
+		return (Config.SeasonItem(id)) ~= nil
+	end
+	return false
+end
+
+-- HOW FAR THROUGH A SET SOMEBODY IS. `owned` is the player's set of ids for
+-- that kind. Returns have, need -- never a fraction, because the UI wants
+-- "4 / 6" and a bar can divide for itself.
+function Config.SetProgress(set, owned)
+	local have = 0
+	for _, id in set.items do
+		if (owned or {})[id] then have += 1 end
+	end
+	return have, #set.items
+end
+
+-- THE ALBUM TOTAL: how many distinct collectibles exist across every set,
+-- and how many are held. This is the long-term number, so it must count each
+-- item ONCE even where two sets share one -- otherwise finishing a set could
+-- push the total past its own maximum.
+function Config.AlbumTotal(ownedByKind)
+	local seen, have, total = {}, 0, 0
+	for _, set in Config.Sets do
+		for _, id in set.items do
+			local key = set.kind .. ":" .. id
+			if not seen[key] then
+				seen[key] = true
+				total += 1
+				if ((ownedByKind or {})[set.kind] or {})[id] then have += 1 end
+			end
+		end
+	end
+	return have, total
+end
+
 function Config.Furn(id)
 	for _, f in Config.Furniture do
 		if f.id == id then return f end
@@ -1215,11 +1350,17 @@ function Config.Furn(id)
 	return nil
 end
 
--- MAX OBJECTS IN A FLAT. A cap exists because every placed object is a
--- streamed Model: a hundred of them in one room is a frame-rate problem
--- that only shows up on the device of whoever walks in, not the owner who
--- placed them one at a time.
-Config.FurnitureMax = 40
+-- OWNING AND PLACING ARE CAPPED DIFFERENTLY, AND THE DIFFERENCE MATTERS.
+--
+-- PLACING is capped because every placed object is a streamed Model, and a
+-- hundred in one room is a frame-rate problem that shows up on the device of
+-- whoever walks in rather than the owner who added them one at a time.
+--
+-- OWNING is NOT capped. There are 53 pieces plus 12 seasonal, and several
+-- album sets are built out of them -- a cap on ownership would make the
+-- album literally uncompletable for the people most likely to care about it.
+-- You can own the lot and choose what is out.
+Config.FurniturePlaced = 40
 
 -- HOW FAR ALONG A PLOT IS, 0..1. The one place this arithmetic lives: the
 -- server pays off it, the client draws off it, and neither may invent its

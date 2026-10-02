@@ -230,8 +230,13 @@ for _, f in Config.Furniture do
 	seenInv[f.inv] = (seenInv[f.inv] or 0) + 1
 end
 ok("furniture catalogue is populated", #Config.Furniture >= 40, tostring(#Config.Furniture))
-ok("there is a cap on objects per flat", (Config.FurnitureMax or 0) > 0,
+ok("there is a cap on objects PLACED", (Config.FurniturePlaced or 0) > 0,
 	"every placed object is a streamed Model; uncapped is a frame-rate bug")
+-- OWNING MUST NOT BE CAPPED, or the album cannot be finished. The placement
+-- cap is smaller than the catalogue on purpose; if it were ever applied to
+-- ownership instead, a completionist would hit a wall they could not see.
+ok("owning is not capped", rawget(Config, "FurnitureMax") == nil,
+	"FurnitureMax conflated owning with placing -- use FurniturePlaced")
 
 -- A NEW PLAYER MUST BE ABLE TO AFFORD SOMETHING. The "spend some of it" task
 -- fires after the first shift, so the cheapest item has to be inside one
@@ -269,6 +274,87 @@ end
 ok("October has a season", Config.Season(10) ~= nil)
 ok("a quiet month has none", Config.Season(2) == nil)
 ok("SeasonItem finds a seasonal item", (Config.SeasonItem("h_pumpkin")) ~= nil)
+
+---------------------------------------------------------------------------
+section("Album and sets")
+---------------------------------------------------------------------------
+-- EVERY ITEM IN EVERY SET MUST WALK BACK TO A REAL POOL. A set that names an
+-- id nothing can drop is permanently uncompletable, and the player has no
+-- way to tell -- they just never finish it. This is the single most important
+-- check in the file.
+local pages = {}
+for _, pg in Config.AlbumPages do pages[pg.id] = true end
+local titles = {}
+for _, t in Config.Titles do titles[t.id] = true end
+
+local setIds = {}
+for _, set in Config.Sets do
+	ok("set " .. set.id .. " id is unique", not setIds[set.id], set.id)
+	setIds[set.id] = true
+	ok("set " .. set.id .. " is on a real page", pages[set.page] == true, tostring(set.page))
+	ok("set " .. set.id .. " has a blurb", type(set.blurb) == "string" and #set.blurb > 0)
+	ok("set " .. set.id .. " is completable", #set.items >= 3, tostring(#set.items) .. " items")
+	for _, id in set.items do
+		ok(("set %s item %s exists"):format(set.id, id),
+			Config.SetItemExists(set.kind, id), set.kind .. ":" .. id)
+	end
+	-- no duplicate ids inside one set, which would make it unfinishable by
+	-- making `need` larger than the number of distinct things to find
+	local seen = {}
+	for _, id in set.items do
+		ok(("set %s lists %s once"):format(set.id, id), not seen[id], id)
+		seen[id] = true
+	end
+	ok("set " .. set.id .. " pays something", set.reward ~= nil)
+	if set.reward and set.reward.title then
+		ok("set " .. set.id .. " title is declared", titles[set.reward.title] == true, set.reward.title)
+	end
+	-- THE COMPLETION REWARD MUST NOT ALSO BE DROPPABLE INSIDE THE SET,
+	-- or finishing the set is the slow way to get something you already had.
+	if set.reward and set.reward.furniture then
+		ok("set " .. set.id .. " reward is not in its own set", not seen[set.reward.furniture],
+			set.reward.furniture)
+		ok("set " .. set.id .. " reward furniture exists", Config.Furn(set.reward.furniture) ~= nil)
+	end
+	if set.season then
+		ok("set " .. set.id .. " names a real season",
+			(function() for _, sn in Config.Seasons do if sn.id == set.season then return true end end return false end)(),
+			set.season)
+	end
+end
+ok("there are sets to collect", #Config.Sets >= 5, tostring(#Config.Sets))
+
+-- every page has at least one set, or the tab opens on nothing
+for _, pg in Config.AlbumPages do
+	local n = 0
+	for _, set in Config.Sets do if set.page == pg.id then n += 1 end end
+	ok("page " .. pg.id .. " has sets", n > 0)
+end
+
+-- progress maths
+local first = Config.Sets[1]
+local none, needed = Config.SetProgress(first, {})
+ok("an empty collection is 0 / n", none == 0 and needed == #first.items)
+local all = {}
+for _, id in first.items do all[id] = true end
+local got = Config.SetProgress(first, all)
+ok("a full collection is n / n", got == #first.items)
+
+-- THE ALBUM TOTAL COUNTS EACH ITEM ONCE. If two sets ever share an item, a
+-- naive sum would let `have` exceed `total` and the headline number would
+-- read 101 / 100.
+local have, total = Config.AlbumTotal({})
+ok("album starts empty", have == 0)
+ok("album has a total", total > 0, tostring(total))
+local everything = {}
+for _, set in Config.Sets do
+	everything[set.kind] = everything[set.kind] or {}
+	for _, id in set.items do everything[set.kind][id] = true end
+end
+local haveAll, totalAll = Config.AlbumTotal(everything)
+ok("owning everything fills the album", haveAll == totalAll,
+	("%d / %d"):format(haveAll, totalAll))
+print(("  album is %d collectibles across %d sets"):format(total, #Config.Sets))
 
 ---------------------------------------------------------------------------
 section("Pixel grid (static, against City.lua source)")

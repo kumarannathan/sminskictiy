@@ -1924,6 +1924,9 @@ do
 			-- disagrees.
 			farm = type(c.farm) == "table" and c.farm or nil,
 			tasks = type(c.tasks) == "table" and c.tasks or {},
+			furn = type(c.furn) == "table" and c.furn or {},
+			sets = type(c.sets) == "table" and c.sets or {},
+			titles = type(c.titles) == "table" and c.titles or {},
 			tutorial = c.tutorial == true, tour = c.tour == true, apts = type(c.apts) == "table" and c.apts or {}, homeCar = c.homeCar, sleepReady = (os.time() - (tonumber(c.lastSleep) or 0)) > 20 * 3600,
 		}
 	end
@@ -2397,6 +2400,101 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "buyFurn" or action == "album" or action == "claimSet" then
+			-----------------------------------------------------------------
+			-- FURNITURE, THE ALBUM, AND SET REWARDS (docs/RELEASE.md 2.2).
+			--
+			-- OWNING AND PLACING ARE SEPARATE. c.furn is what you have bought
+			-- and is permanent; where it stands in your flat is a different
+			-- record. Merging them would mean selling a sofa to move it, and
+			-- would make the album -- which asks what you OWN -- disagree
+			-- with itself every time somebody redecorated.
+			--
+			-- SEASONAL ITEMS ARE BOUGHT THROUGH THE SAME DOOR, so a flat does
+			-- not care how a thing was acquired, but they are gated on the
+			-- SERVER's month: a client that asks for a pumpkin in March is
+			-- refused rather than trusted.
+			-----------------------------------------------------------------
+			c.furn = type(c.furn) == "table" and c.furn or {}
+			c.sets = type(c.sets) == "table" and c.sets or {}
+			c.titles = type(c.titles) == "table" and c.titles or {}
+
+			-- WHAT THE PLAYER OWNS, BY POOL. Built fresh on every call rather
+			-- than cached, because a stale copy here would show somebody a
+			-- set as incomplete that they had just finished.
+			local function ownedByKind()
+				local chars = {}
+				for id, v in pairs(s.data.OwnedCharacters or {}) do
+					if v then chars[id] = true end
+				end
+				local furn, seas = {}, {}
+				for id, v in pairs(c.furn) do
+					if v then
+						if Config.SeasonItem(id) then seas[id] = true else furn[id] = true end
+					end
+				end
+				return { character = chars, furniture = furn, season = seas }
+			end
+
+			if action == "album" then
+				local owned = ownedByKind()
+				local sets = {}
+				for _, set in Config.Sets do
+					local have, need = Config.SetProgress(set, owned[set.kind] or {})
+					table.insert(sets, { id = set.id, name = set.name, page = set.page,
+						blurb = set.blurb, kind = set.kind, items = set.items,
+						have = have, need = need,
+						done = c.sets[set.id] == true,
+						ready = have >= need and not c.sets[set.id] })
+				end
+				local have, total = Config.AlbumTotal(owned)
+				return { ok = true, sets = sets, have = have, total = total,
+					owned = owned, titles = c.titles }
+			end
+
+			if action == "claimSet" then
+				local set = Config.Set(tostring(arg))
+				if not set or c.sets[set.id] then return { ok = false } end
+				local owned = ownedByKind()
+				local have, need = Config.SetProgress(set, owned[set.kind] or {})
+				if have < need then return { ok = false, reason = "not finished yet" } end
+				c.sets[set.id] = true
+				local r = set.reward or {}
+				-- the completion item is granted here and CANNOT drop, which
+				-- is what makes finishing worth anything
+				if r.furniture then c.furn[r.furniture] = true end
+				if r.title then c.titles[r.title] = true end
+				local got = (r.coins or 0) > 0 and pay(player, s, r.coins, 25, nil) or 0
+				save(player)
+				return { ok = true, coins = got, title = r.title,
+					furniture = r.furniture, city = public(s), data = publicData(s) }
+			end
+
+			-- BUY
+			local id = tostring(arg)
+			local def = Config.Furn(id)
+			local price = def and def.price
+			if not def then
+				local it, season = Config.SeasonItem(id)
+				if not it then return { ok = false } end
+				-- THE SERVER'S MONTH DECIDES. os.date on the client is the
+				-- player's timezone and their clock, neither of which may
+				-- open a shop that is supposed to be shut.
+				if not season or os.date("*t").month ~= season.month then
+					return { ok = false, reason = "that one is out of season" }
+				end
+				def, price = it, it.price
+			end
+			if c.furn[id] then return { ok = false, reason = "owned" } end
+			-- NO CAP ON OWNING. Config.FurniturePlaced caps what can be OUT
+			-- in the room at once, which is the streaming concern; capping
+			-- what you may own would make the album uncompletable.
+			if not spend(player, s, price) then return { ok = false, reason = "not enough coins" } end
+			c.furn[id] = true
+			bump(s.data, "cityBuys", 1)
+			save(player)
+			return { ok = true, bought = id, city = public(s), data = publicData(s) }
+
 		elseif action == "task" then
 			-------------------------------------------------------------
 			-- CITY TASKS (docs/ONBOARDING.md section 5, Config.Tasks).
