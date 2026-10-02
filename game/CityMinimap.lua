@@ -71,7 +71,7 @@ return function(deps)
 		-- the paper rim, on the same 9-slice disc the rest of the UI uses
 		local rim = box(holder, { Size = UDim2.fromScale(1, 1), BackgroundColor3 = C.paper })
 		corner(rim)
-		UI.skin(rim, "disc", 0.5)
+		UI.skin(rim, "disc", UI.T.border)
 
 		local inset = math.max(5, math.floor(size * 0.055))
 		local view = box(holder, {

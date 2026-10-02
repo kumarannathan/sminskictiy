@@ -304,10 +304,10 @@ return function(deps)
 		end
 		for _, c in cats do
 			local b = Instance.new("Frame")
-			b.Size = UDim2.fromOffset(70, 40)
+			b.Size = UDim2.fromOffset(72, T.tap.std)
 			b.BackgroundTransparency = 1
 			b.Parent = tabs
-			UI.button(b, c.name:sub(1, 7), { size = UDim2.fromOffset(70, 36),
+			UI.button(b, c.name:sub(1, 7), { size = UDim2.fromOffset(72, T.tap.std),
 				color = c.id == "season" and C.lav or C.paper2,
 				textSize = T.size.xs, textColor = C.ink,
 				onClick = function() fill(c.id) end })

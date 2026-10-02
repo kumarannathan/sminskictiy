@@ -669,7 +669,7 @@ return function(deps)
 		pill.BackgroundColor3 = C.paper
 		pill.Size = UDim2.fromOffset(Z.coinW, Z.coinH)
 		pill.Parent = root
-		UI.skin(pill, "pill", 24 / 80)
+		UI.skin(pill, "pill", UI.T.border)
 		UI.icon(pill, "coin", { Size = UDim2.fromOffset(52, 52), Position = UDim2.new(0, -12, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), ZIndex = 3 })
 		H.coins = UI.text(pill, "0", { Size = UDim2.new(1, -50, 1, 0), Position = UDim2.fromOffset(46, 0), Font = Enum.Font.FredokaOne, TextSize = 24, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 3 })
 		---------------------------------------------------------------------
@@ -750,7 +750,7 @@ return function(deps)
 		where.BackgroundColor3 = C.paper
 		where.Size = UDim2.fromOffset(Z.whereMax, Z.whereH)
 		where.Parent = root
-		UI.skin(where, "pill", 30 / 80)
+		UI.skin(where, "pill", UI.T.border)
 		H.district = UI.text(where, "SMINSKI CITY", { Size = UDim2.new(1, -20, 0, 30), Position = UDim2.fromOffset(10, 6), Font = Enum.Font.FredokaOne, TextSize = 24, ZIndex = 3 })
 		H.street = UI.text(where, "", { Size = UDim2.new(1, 0, 0, 20), Position = UDim2.fromOffset(0, 32), Font = Enum.Font.GothamBold, TextSize = 14, TextColor3 = C.inkSoft, ZIndex = 3 })
 		-----------------------------------------------------------------------
@@ -1197,13 +1197,10 @@ return function(deps)
 			row.BorderSizePixel = 0
 			row.Parent = card
 			local cr = Instance.new("UICorner") cr.CornerRadius = UDim.new(0, 14) cr.Parent = row
-			local ic = Instance.new("ImageLabel")
-			ic.Size = UDim2.fromOffset(44, 44)
-			ic.Position = UDim2.fromOffset(14, 12)
-			ic.BackgroundTransparency = 1
-			ic.Image = UI.Art.icons[cab.icon] or ""
-			ic.ImageColor3 = cab.color
-			ic.Parent = row
+			-- UI.icon, not a hand-built ImageLabel: building one here skipped
+			-- ResampleMode and blurred a 16px pixel glyph across 44px.
+			UI.icon(row, cab.icon, { Size = UDim2.fromOffset(44, 44),
+				Position = UDim2.fromOffset(14, 12), ImageColor3 = cab.color })
 			UI.text(row, cab.title, { Size = UDim2.new(1, -240, 0, 26), Position = UDim2.fromOffset(72, 12), Font = Enum.Font.FredokaOne, TextSize = 22, TextXAlignment = Enum.TextXAlignment.Left })
 			UI.text(row, cab.sub, { Size = UDim2.new(1, -240, 0, 20), Position = UDim2.fromOffset(72, 38), TextSize = 16, TextColor3 = C.ink, TextXAlignment = Enum.TextXAlignment.Left })
 			UI.button(row, "PLAY", { size = UDim2.fromOffset(140, 50), pos = UDim2.new(1, -14, 0.5, 0), anchor = Vector2.new(1, 0.5), color = cab.color, textSize = 20, onClick = function()
@@ -1245,13 +1242,10 @@ return function(deps)
 			row.BorderSizePixel = 0
 			row.Parent = card
 			local cr = Instance.new("UICorner") cr.CornerRadius = UDim.new(0, 12) cr.Parent = row
-			local ic = Instance.new("ImageLabel")
-			ic.Size = UDim2.fromOffset(30, 30)
-			ic.Position = UDim2.fromOffset(12, 9)
-			ic.BackgroundTransparency = 1
-			ic.Image = UI.Art.icons[st[3]] or ""
-			ic.ImageColor3 = st[4]
-			ic.Parent = row
+			-- same as the arcade row above: UI.icon or it renders blurred.
+			-- 32, not 30, so the glyph lands on the 4px grid.
+			UI.icon(row, st[3], { Size = UDim2.fromOffset(32, 32),
+				Position = UDim2.fromOffset(12, 8), ImageColor3 = st[4] })
 			UI.text(row, st[1], { Size = UDim2.new(1, -210, 0, 22), Position = UDim2.fromOffset(54, 5), Font = Enum.Font.FredokaOne, TextSize = 19, TextXAlignment = Enum.TextXAlignment.Left })
 			UI.text(row, st[2], { Size = UDim2.new(1, -210, 0, 18), Position = UDim2.fromOffset(54, 26), TextSize = 15, TextColor3 = C.ink, TextXAlignment = Enum.TextXAlignment.Left })
 			local function dest()
@@ -3140,7 +3134,9 @@ return function(deps)
 						local hit = Instance.new("TextButton")
 						hit.Text = ""
 						hit.BackgroundTransparency = 1
-						hit.Size = UDim2.fromOffset(34, 34)
+						-- 44, not 34: this is the invisible hit area on a map dot, so a
+						-- bigger one is free and the old one missed on a phone
+						hit.Size = UDim2.fromOffset(UI.T.tap.min, UI.T.tap.min)
 						hit.AnchorPoint = Vector2.new(0.5, 0.5)
 						hit.Position = UDim2.fromScale(0.5, 0.5)
 						hit.ZIndex = 7

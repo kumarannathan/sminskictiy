@@ -170,7 +170,7 @@ return function(deps)
 				p.Parent = pips
 			end
 			if set.ready then
-				UI.button(f, "CLAIM", { size = UDim2.fromOffset(92, 36),
+				UI.button(f, "CLAIM", { size = UDim2.fromOffset(92, T.tap.std),
 					pos = UDim2.new(1, -100, 1, -8), anchor = Vector2.new(0, 1),
 					color = C.gold, textSize = T.size.sm,
 					onClick = function()
@@ -213,7 +213,7 @@ return function(deps)
 				b.Size = UDim2.fromOffset(100, 40)
 				b.BackgroundTransparency = 1
 				b.Parent = tabs
-				UI.button(b, pg.name, { size = UDim2.fromOffset(100, 36),
+				UI.button(b, pg.name, { size = UDim2.fromOffset(100, T.tap.std),
 					color = C.paper2, textColor = C.ink, textSize = T.size.xs,
 					onClick = function() show(pg.id, res.sets, res.have, res.total) end })
 			end
@@ -223,7 +223,7 @@ return function(deps)
 			mb.Size = UDim2.fromOffset(100, 40)
 			mb.BackgroundTransparency = 1
 			mb.Parent = tabs
-			UI.button(mb, "JOBS", { size = UDim2.fromOffset(100, 36),
+			UI.button(mb, "JOBS", { size = UDim2.fromOffset(100, T.tap.std),
 				color = C.lav, textColor = C.ink, textSize = T.size.xs,
 				onClick = function() A.showMastery(list, lay, count) end })
 			show(Config.AlbumPages[1].id, res.sets, res.have, res.total)
@@ -283,7 +283,7 @@ return function(deps)
 				fill.ZIndex = 5
 				fill.Parent = tr
 				if t.ready then
-					UI.button(f, "CLAIM", { size = UDim2.fromOffset(92, 36),
+					UI.button(f, "CLAIM", { size = UDim2.fromOffset(92, T.tap.std),
 						pos = UDim2.new(1, -12, 0, 10), anchor = Vector2.new(1, 0),
 						color = C.gold, textSize = T.size.sm,
 						onClick = function()

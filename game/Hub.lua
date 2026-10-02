@@ -61,7 +61,7 @@ return function(deps)
 		card.Size = UDim2.new(1, 0, 0, 62)
 		card.BackgroundColor3 = color
 		card.Parent = holder
-		UI.skin(card, "pill", 31 / 80)
+		UI.skin(card, "pill", UI.T.border)
 		local ic = UI.icon(card, iconName, { Size = UDim2.fromOffset(62, 62), Position = UDim2.fromOffset(-10, 0), ZIndex = 3 })
 		UI.text(card, title, { Size = UDim2.new(1, -60, 0, 34), Position = UDim2.fromOffset(52, 4), Font = Enum.Font.FredokaOne, TextSize = 24, TextColor3 = C.white, TextXAlignment = Enum.TextXAlignment.Left, TextScaled = true, stroke = 2, ZIndex = 3 })
 		UI.text(card, sub, { Size = UDim2.new(1, -60, 0, 18), Position = UDim2.fromOffset(52, 38), Font = Enum.Font.GothamBold, TextSize = 14, TextColor3 = C.white, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 3 })
@@ -1040,7 +1040,7 @@ return function(deps)
 	coinPillHolder.AnchorPoint = Vector2.new(1, 0)
 	coinPillHolder.Position = UDim2.new(1, -190, 0, 27)
 	coinPillHolder.Parent = root
-	UI.skin(coinPillHolder, "pill", 24 / 80)
+	UI.skin(coinPillHolder, "pill", UI.T.border)
 	UI.icon(coinPillHolder, "coin", { Size = UDim2.fromOffset(52, 52), Position = UDim2.new(0, -12, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), ZIndex = 3 })
 	local coinText = UI.text(coinPillHolder, "0", { Size = UDim2.new(1, -50, 1, 0), Position = UDim2.fromOffset(46, 0), Font = Enum.Font.FredokaOne, TextSize = 24, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 3 })
 	local lvlText = UI.text(root, "LV 1", { AnchorPoint = Vector2.new(1, 0), Size = UDim2.fromOffset(320, 26), Position = UDim2.new(1, -26, 0, 88), Font = Enum.Font.FredokaOne, TextSize = 20, TextColor3 = C.white, TextXAlignment = Enum.TextXAlignment.Right, stroke = 2 })
@@ -1050,7 +1050,7 @@ return function(deps)
 	clockPill.Size = UDim2.fromOffset(150, 46)
 	clockPill.Position = UDim2.new(0.5, 0, 0, 20)
 	clockPill.Parent = root
-	UI.skin(clockPill, "pill", 23 / 80)
+	UI.skin(clockPill, "pill", UI.T.border)
 	UI.icon(clockPill, "clock", { Size = UDim2.fromOffset(50, 50), Position = UDim2.new(0, -10, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), ZIndex = 3 })
 	Hub._hudClock = (UI.text(clockPill, "00:00", { Size = UDim2.new(1, -44, 1, 0), Position = UDim2.fromOffset(40, 0), Font = Enum.Font.FredokaOne, TextSize = 26, ZIndex = 3 }))
 	local hint = UI.text(root, "WASD / stick to walk around  ·  walk into a building to play", { AnchorPoint = Vector2.new(0.5, 1), Size = UDim2.fromOffset(700, 24), Position = UDim2.new(0.5, 0, 1, -18), Font = Enum.Font.GothamBold, TextSize = 16, TextColor3 = C.white, stroke = 1 })
@@ -1273,7 +1273,10 @@ return function(deps)
 		list.Padding = UDim.new(0, 4)
 		list.Parent = panel
 		local head = Instance.new("TextButton")
-		head.Size = UDim2.new(1, 0, 0, 24)
+		-- 24 was the smallest tappable thing in the game, well under the 44
+		-- floor UI.T.tap sets. The row is transparent, so growing the hit
+		-- area changes nothing visually.
+		head.Size = UDim2.new(1, 0, 0, UI.T.tap.min)
 		head.BackgroundTransparency = 1
 		head.Text = ""
 		head.LayoutOrder = 0

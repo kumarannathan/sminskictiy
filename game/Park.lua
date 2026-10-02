@@ -278,13 +278,13 @@ return function(deps)
 	chaosBg.BackgroundColor3 = C.paper2
 	chaosBg.ZIndex = 3
 	chaosBg.Parent = chaosCard
-	UI.skin(chaosBg, "pill", 8 / 80)
+	UI.skin(chaosBg, "pill", UI.T.border)
 	local chaosFill = Instance.new("Frame")
 	chaosFill.Size = UDim2.fromScale(0.1, 1)
 	chaosFill.BackgroundColor3 = C.mint
 	chaosFill.ZIndex = 4
 	chaosFill.Parent = chaosBg
-	UI.skin(chaosFill, "pill", 8 / 80)
+	UI.skin(chaosFill, "pill", UI.T.border)
 	-- banners + big state text
 	local banner = UI.text(root, "", { AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.fromOffset(800, 60), Position = UDim2.new(0.5, 0, 0, 118), Font = Enum.Font.FredokaOne, TextSize = 52, TextColor3 = C.gold, stroke = 4, TextTransparency = 1 })
 	local warn = UI.text(root, "", { AnchorPoint = Vector2.new(0.5, 1), Size = UDim2.fromOffset(700, 40), Position = UDim2.new(0.5, 0, 1, -40), Font = Enum.Font.FredokaOne, TextSize = 32, TextColor3 = C.coral, stroke = 3 })

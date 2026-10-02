@@ -255,7 +255,10 @@ return function(Config, Models, Audio, ctx)
 		local shadow = frame(holder, { Size = UDim2.new(1, -8, 1, 0), Position = UDim2.fromOffset(4, 7), BackgroundColor3 = Color3.fromRGB(30, 20, 60), BackgroundTransparency = 0.72 })
 		corner(shadow, 24)
 		local face = frame(holder, { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color or C.paper })
-		skin(face, "card", 0.42)
+		-- T.border, not 0.42. UI.card is every card in the game, so a
+		-- fractional slice here put uneven edges on nearly every panel --
+		-- the exact thing the integer rule above exists to prevent.
+		skin(face, "card", T.border)
 		return holder, face
 	end
 	UI.card = card
@@ -405,7 +408,7 @@ return function(Config, Models, Audio, ctx)
 		local f = frame(parent, props)
 		f.BackgroundColor3 = C.paper
 		local h = f.Size.Y.Offset
-		skin(f, "pill", (h / 2) / Art.ui.pill.corner)
+		skin(f, "pill", T.border)
 		local name = iconName == "◉" and "coin" or iconName
 		local isz = math.floor(h * 1.08)
 		icon(f, name, { Size = UDim2.fromOffset(isz, isz), Position = UDim2.new(0, -isz * 0.22, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), ZIndex = f.ZIndex + 1 })
@@ -782,7 +785,9 @@ return function(Config, Models, Audio, ctx)
 	for i, id in Config.PowerupOrder do
 		local def = Config.Powerups[id]
 		local row = frame(puList, { Size = UDim2.fromOffset(200, 40), BackgroundColor3 = C.paper, Visible = false, LayoutOrder = i })
-		skin(row, "pill", 20 / Art.ui.pill.corner)
+		-- derived from a corner that is now 12, not 80: the division gave a
+		-- fraction and meant nothing after the pixel art landed
+		skin(row, "pill", T.border)
 		icon(row, Art.powerup[id], { Size = UDim2.fromOffset(40, 40), Position = UDim2.new(0, -2, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), ZIndex = row.ZIndex + 1 })
 		text(row, def.name, { Size = UDim2.new(1, -46, 0, 18), Position = UDim2.fromOffset(42, 3), Font = DISPLAY, TextSize = 15, TextXAlignment = Enum.TextXAlignment.Left })
 		local barBg = frame(row, { Size = UDim2.new(1, -54, 0, 8), Position = UDim2.fromOffset(42, 24), BackgroundColor3 = C.paper2 })
