@@ -2277,14 +2277,24 @@ do
 
 		elseif action == "claw" then
 			if not near(pos, Places.CityClaw, 70) then return { ok = false } end
+			-- THE CLAW IS A PAID RANDOM ITEM TOO, and had no gate at all. It
+			-- costs coins, coins are purchasable with Robux, and it can pay
+			-- out a capsule character -- so it falls under exactly the same
+			-- rules the capsule machine does.
+			if Config.CapsulesArePaid and paidRandomRestricted(player) then
+				return { ok = false, reason = "restricted" }
+			end
 			if not spend(player, s, CC.Claw.price) then return { ok = false, reason = "not enough coins" } end
 			local r = math.random()
 			local prize
-			if r < 0.08 then
+			-- thresholds come from Config.Claw so the odds the machine SHOWS
+			-- and the odds it USES cannot drift apart
+			local CW = Config.Claw
+			if r < CW.capsule then
 				-- a free capsule
 				local res = rollCapsule(player, s)
 				prize = { kind = "capsule", character = res.character, rarity = res.rarity, duplicate = res.duplicate }
-			elseif r < 0.16 then
+			elseif r < CW.outfit then
 				-- an outfit you don't have yet (from the cheaper shop rack)
 				local pool = {}
 				for _, o in Config.Outfits do
@@ -2297,7 +2307,13 @@ do
 				end
 			end
 			if not prize then
-				local amt = r < 0.5 and math.random(10, 30) or r < 0.8 and 50 or r < 0.95 and 120 or 250
+				local amt = 250
+				for _, b in Config.Claw.coinBands do
+					if r < b.upto then
+						amt = b.min == b.max and b.min or math.random(b.min, b.max)
+						break
+					end
+				end
 				local got = pay(player, s, amt, 1)
 				prize = { kind = "coins", coins = got }
 			end
@@ -2404,6 +2420,16 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "odds" then
+			-- THE ODDS ANY RANDOM REWARD IS REQUIRED TO PUBLISH. Served from
+			-- the same tables the rolls use, so what a player is told and what
+			-- actually happens are the same numbers by construction.
+			return { ok = true,
+				capsule = Config.CapsuleOdds(),
+				claw = Config.ClawOdds(),
+				wheel = Config.WheelOdds(),
+				restricted = Config.CapsulesArePaid and paidRandomRestricted(player) or false }
+
 		elseif action == "wheel" or action == "spin" then
 			-----------------------------------------------------------------
 			-- THE PRIZE WHEEL (Config.Wheel). One free spin a day.

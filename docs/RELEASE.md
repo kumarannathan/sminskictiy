@@ -29,18 +29,24 @@ This repo already found it. `docs/specs/daily-capsule/monetization.md` finding
 
 What has to happen before the game is advertised as released:
 
-1. Set `Config.CapsulesArePaid = true`.
-2. Gate every random-reward surface on
-   `PolicyService:GetPolicyInfoForPlayerAsync().ArePaidRandomItemsRestricted`.
-   The call already exists at `SminskiServer.server.lua:648-652` — it is read
-   and then not used for this.
-3. Publish per-outcome odds on the capsule UI, the claw machine, the wheel
-   (§3.1) and every bag or crate added later.
-4. Decide the restricted-player path. Blocking capsules outright for those
-   players removes the whole retention layer below from a real share of the
-   audience. **The better answer is to make the activity meter, not Robux, the
-   only route to a capsule** — then capsules stop being paid random items for
-   everybody and the problem dissolves instead of being gated around.
+1. ~~Set `Config.CapsulesArePaid = true`.~~ **Done 2026-10-02.**
+2. ~~Gate every random-reward surface on `ArePaidRandomItemsRestricted`.~~
+   **Done.** The capsule machine already had the gate and it never fired; the
+   claw machine had none at all, despite costing coins and paying out capsule
+   characters. Both are gated now.
+3. ~~Publish per-outcome odds.~~ **Done.** `Config.CapsuleOdds()`,
+   `Config.ClawOdds()` and `Config.WheelOdds()` are derived from the same
+   tables the rolls use, so the disclosure cannot drift from the behaviour,
+   and `UI.showOdds` renders them. The capsule shop previously showed only
+   TIER odds ("Rare is 27%"), which does not tell a player their chance of any
+   particular character — the number the rules are actually about. The claw's
+   odds were four magic numbers in the server and were disclosed nowhere.
+4. **STILL OPEN, AND IT IS YOUR CALL.** Restricted players are now refused
+   capsules and the claw, with an explanation rather than a dead button. That
+   is the legally safe reading and it costs those players a whole retention
+   loop. The alternative is to make the activity meter the ONLY route to a
+   capsule, so they stop being paid random items for everybody — that changes
+   the economy, so it is not a thing to flip quietly.
 
 That fourth point is a design decision, not a code change, and it should be
 made before §2 is built on top of capsules.

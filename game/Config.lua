@@ -52,11 +52,25 @@ Config.ComboPoints = { Coin = 1, Dodge = 5, Perfect = 10, NearMiss = 15, Chain =
 -- ECONOMY
 ---------------------------------------------------------------------------
 Config.CapsuleCost = 400
--- Capsules are random items. They only cost EARNED coins, so they are not
--- "paid random items". If you ever sell coins for Robux, set this to true:
--- the server then checks PolicyService.ArePaidRandomItemsRestricted and blocks
--- capsules for players where paid random items aren't allowed.
-Config.CapsulesArePaid = false
+-- CAPSULES ARE PAID RANDOM ITEMS, AND THIS WAS WRONG UNTIL 2026-10-02.
+--
+-- The old comment said capsules cost only EARNED coins so the rules did not
+-- apply. That stopped being true the day coin bundles went live: there are
+-- eight Developer Products selling coins for Robux (Config.Products), coins
+-- buy capsules, so capsules are indirectly purchasable with Robux -- which is
+-- Roblox's own definition of a Paid Random Item.
+--
+-- With this true, the server checks PolicyService.ArePaidRandomItemsRestricted
+-- and refuses capsules and the claw for players whose account or region does
+-- not permit them. That is a real cost: those players lose a whole retention
+-- loop. The alternative, recommended in docs/RELEASE.md section 0, is to make
+-- the activity meter the ONLY route to a capsule so they stop being paid
+-- random items for everybody -- that is a design decision with economy
+-- consequences, so it is the owner's call, not a thing to flip quietly.
+--
+-- Per-outcome odds are published (Config.CapsuleOdds / Config.ClawOdds) and
+-- shown in game, which the rules require independently of the above.
+Config.CapsulesArePaid = true
 Config.ReviveBaseCost = 250 -- coins; doubles with each paid revive in a run
 -- Optional Robux revive: set to your Developer Product id (a number) to enable
 Config.ReviveProductId = 3713434937
@@ -1404,6 +1418,66 @@ Config.Wheel = {
 
 -- the odds exactly as the wheel shows them, so the UI cannot drift from the
 -- table it is drawing
+-- PER-OUTCOME ODDS, PUBLISHED.
+--
+-- Roblox requires that a random reward discloses the chance of each outcome,
+-- not just of each tier. Capsule odds were previously only knowable as
+-- "Rare is 27%" -- which does not say your chance of any PARTICULAR
+-- character, and that is the number the rules are about.
+--
+-- These are computed from the same tables the roll uses, so the disclosure
+-- cannot drift from the behaviour. If somebody adds a character, the odds
+-- shown change on their own.
+function Config.CapsuleOdds()
+	local total = 0
+	for _, r in Config.Rarities do total += r.weight end
+	local out = {}
+	for _, r in Config.Rarities do
+		local pool = {}
+		for _, c in Config.Characters do
+			if c.rarity == r.id then table.insert(pool, c) end
+		end
+		for _, c in pool do
+			table.insert(out, { id = c.id, name = c.name, rarity = r.id,
+				pct = (r.weight / total) * (1 / math.max(1, #pool)) * 100 })
+		end
+	end
+	return out
+end
+
+-- THE CLAW'S ODDS WERE FOUR MAGIC NUMBERS IN THE SERVER (0.08, 0.16, 0.5,
+-- 0.8, 0.95) and were disclosed nowhere at all. They live here now so the
+-- machine can show them and so the thresholds have exactly one definition.
+Config.Claw = {
+	capsule = 0.08,   -- cumulative: below this, a capsule
+	outfit = 0.16,    -- below this (and above capsule), an outfit you lack
+	-- everything else is coins, in these bands
+	coinBands = {
+		{ upto = 0.50, min = 10, max = 30 },
+		{ upto = 0.80, min = 50, max = 50 },
+		{ upto = 0.95, min = 120, max = 120 },
+		{ upto = 1.00, min = 250, max = 250 },
+	},
+}
+
+function Config.ClawOdds()
+	local C = Config.Claw
+	local out = {
+		{ id = "capsule", name = "A toy capsule", pct = C.capsule * 100 },
+		{ id = "outfit", name = "An outfit you don't own", pct = (C.outfit - C.capsule) * 100 },
+	}
+	local prev = C.outfit
+	for _, b in C.coinBands do
+		if b.upto > prev then
+			local name = b.min == b.max and (b.min .. " coins")
+				or ("%d-%d coins"):format(b.min, b.max)
+			table.insert(out, { id = "coins" .. b.min, name = name, pct = (b.upto - prev) * 100 })
+			prev = b.upto
+		end
+	end
+	return out
+end
+
 function Config.WheelOdds()
 	local total = 0
 	for _, w in Config.Wheel do total += w.weight end

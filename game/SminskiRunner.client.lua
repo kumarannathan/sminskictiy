@@ -709,6 +709,11 @@ local function shopResult(res, okMsg)
 		setData(res.data)
 		Audio.play("Chime", 1.2, 0.8)
 		if okMsg then UI.toast(okMsg, UI.C.mintDark) end
+	elseif res and res.reason == "restricted" then
+		-- A SILENT REFUSAL IS THE WORST VERSION OF THIS. Players whose
+		-- account or region does not allow paid random items get told why,
+		-- and told what still works, rather than tapping a dead button.
+		UI.toast("capsules aren't available on this account — everything else still is", UI.C.inkSoft)
 	elseif res and res.reason == "coins" then
 		Audio.play("Click", 0.6, 0.6)
 		UI.toast("not enough coins")

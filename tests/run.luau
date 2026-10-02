@@ -479,6 +479,49 @@ ok("the jackpot stays rare", (seen[jackIdx] or 0) < spins * 0.1,
 	("%d of %d"):format(seen[jackIdx] or 0, spins))
 
 ---------------------------------------------------------------------------
+section("Random-reward compliance")
+---------------------------------------------------------------------------
+-- THIS SECTION IS A RELEASE GATE, not a nicety (docs/RELEASE.md section 0).
+-- Roblox requires per-outcome odds for anything random that is purchasable,
+-- and coins are purchasable with Robux, so capsules and the claw both are.
+ok("capsules are declared as paid random items", Config.CapsulesArePaid == true,
+	"eight live coin products make capsules indirectly Robux-purchasable")
+
+local cOdds = Config.CapsuleOdds()
+ok("every character has published odds", #cOdds == #Config.Characters,
+	("%d odds for %d characters"):format(#cOdds, #Config.Characters))
+local csum = 0
+for _, o in cOdds do
+	ok("capsule " .. o.id .. " can be rolled", o.pct > 0)
+	ok("capsule " .. o.id .. " names its rarity", type(o.rarity) == "string")
+	csum += o.pct
+end
+ok("capsule odds sum to 100", math.abs(csum - 100) < 0.01, ("%.4f"):format(csum))
+
+local wOdds = Config.ClawOdds()
+local wsum = 0
+for _, o in wOdds do
+	ok("claw " .. o.id .. " is reachable", o.pct > 0, ("%.2f%%"):format(o.pct))
+	ok("claw " .. o.id .. " is named for a player", type(o.name) == "string" and #o.name > 0)
+	wsum += o.pct
+end
+ok("claw odds sum to 100", math.abs(wsum - 100) < 0.01, ("%.4f"):format(wsum))
+
+-- THE THRESHOLDS MUST BE ORDERED. The server walks coinBands in order and
+-- takes the first whose `upto` the roll is under; an out-of-order band would
+-- make a later one unreachable while still being advertised.
+local prevUpto = Config.Claw.outfit
+for _, b in Config.Claw.coinBands do
+	ok(("claw band %d is above the previous"):format(b.min), b.upto > prevUpto,
+		("%.2f after %.2f"):format(b.upto, prevUpto))
+	ok(("claw band %d range is sane"):format(b.min), b.max >= b.min)
+	prevUpto = b.upto
+end
+ok("claw bands reach certainty", math.abs(prevUpto - 1) < 1e-9,
+	("last band ends at %.3f, so %.1f%% of rolls fall through to nothing"):format(prevUpto, (1 - prevUpto) * 100))
+ok("capsule threshold is below outfit", Config.Claw.capsule < Config.Claw.outfit)
+
+---------------------------------------------------------------------------
 section("Pixel grid (static, against City.lua source)")
 ---------------------------------------------------------------------------
 -- EVERY HUD DIMENSION IS A MULTIPLE OF 4 (docs/PIXEL_UI.md section 1). With

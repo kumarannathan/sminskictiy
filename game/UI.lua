@@ -1095,6 +1095,66 @@ return function(Config, Models, Audio, ctx)
 	end
 	UI.toast = toast
 
+	-----------------------------------------------------------------------
+	-- THE ODDS SCREEN.
+	--
+	-- DISCLOSURE THAT IS NOT VISIBLE IS NOT DISCLOSURE. Roblox requires the
+	-- chance of each outcome to be shown for any random reward that can be
+	-- bought, and coins are purchasable, so the capsule machine, the claw and
+	-- the wheel all need this (docs/RELEASE.md section 0).
+	--
+	-- It takes a list the SERVER produced from the same tables the rolls use,
+	-- rather than a copy maintained here, so the numbers a player reads and
+	-- the numbers that decide their prize are the same ones by construction.
+	--
+	-- Long lists scroll: the capsule machine has fifteen outcomes and
+	-- truncating the rare ones would hide exactly the numbers people care
+	-- about.
+	-----------------------------------------------------------------------
+	function UI.showOdds(parent, title, rows, note)
+		local holder, card = UI.card(parent, UDim2.fromOffset(380, 420),
+			UDim2.fromScale(0.5, 0.5), Vector2.new(0.5, 0.5), C.paper)
+		holder.Name = "OddsScreen"
+		text(card, title or "CHANCES", { Size = UDim2.new(1, 0, 0, 30),
+			Position = UDim2.fromOffset(0, 14), Font = DISPLAY,
+			TextSize = T.size.lg, ZIndex = 3 })
+		local list = Instance.new("ScrollingFrame")
+		list.Size = UDim2.new(1, -24, 1, -(note and 150 or 116))
+		list.Position = UDim2.fromOffset(12, 52)
+		list.BackgroundTransparency = 1
+		list.BorderSizePixel = 0
+		list.ScrollBarThickness = 6
+		list.ZIndex = 3
+		list.Parent = card
+		local lay = Instance.new("UIListLayout")
+		lay.Padding = UDim.new(0, 2)
+		lay.Parent = list
+		for _, o in rows or {} do
+			local r = Instance.new("Frame")
+			r.Size = UDim2.new(1, -8, 0, 24)
+			r.BackgroundTransparency = 1
+			r.ZIndex = 3
+			r.Parent = list
+			text(r, o.name or o.id, { Size = UDim2.new(1, -70, 1, 0),
+				Font = BODY, TextSize = T.size.xs,
+				TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 4 })
+			text(r, ("%.2f%%"):format(o.pct or 0), { Size = UDim2.fromOffset(70, 24),
+				Position = UDim2.new(1, -70, 0, 0), Font = BOLD, TextSize = T.size.xs,
+				TextColor3 = C.inkSoft, TextXAlignment = Enum.TextXAlignment.Right, ZIndex = 4 })
+		end
+		list.CanvasSize = UDim2.fromOffset(0, lay.AbsoluteContentSize.Y + 8)
+		if note then
+			text(card, note, { Size = UDim2.new(1, -24, 0, 30),
+				Position = UDim2.new(0, 12, 1, -86), Font = BODY,
+				TextSize = T.size.xs, TextColor3 = C.inkSoft,
+				TextWrapped = true, ZIndex = 3 })
+		end
+		UI.button(card, "OK", { size = UDim2.fromOffset(140, T.tap.std),
+			pos = UDim2.new(0.5, 0, 1, -12), anchor = Vector2.new(0.5, 1),
+			color = C.mint, onClick = function() holder:Destroy() end })
+		return holder
+	end
+
 	local function scroller(parent, cellSize, padPx)
 		local sf = Instance.new("ScrollingFrame")
 		sf.Size = UDim2.fromScale(1, 1)
@@ -1450,6 +1510,18 @@ return function(Config, Models, Audio, ctx)
 			text(row, string.format("%d%%", math.floor(r.weight / total * 100 + 0.5)), { AnchorPoint = Vector2.new(1, 0.5), Size = UDim2.fromOffset(80, 30), Position = UDim2.new(1, -12, 0.5, 0), Font = DISPLAY, TextSize = 24, TextXAlignment = Enum.TextXAlignment.Right })
 		end
 		text(oddsCard, "duplicates give coins back", { Size = UDim2.new(1, 0, 0, 18), Position = UDim2.new(0, 0, 1, -30), Font = BODY, TextSize = 14, TextColor3 = C.inkSoft })
+		-- PER-CHARACTER ODDS, not just per tier. The panel above says "Rare is
+		-- 27%", which does not tell you your chance of any PARTICULAR
+		-- character -- and that is the number Roblox's rules are actually
+		-- about (docs/RELEASE.md section 0). Config.CapsuleOdds derives it
+		-- from the same tables the roll uses, so it cannot drift.
+		button(oddsCard, "EVERY CHANCE", { size = UDim2.fromOffset(170, T.tap.min),
+			pos = UDim2.new(1, -12, 1, -8), anchor = Vector2.new(1, 1),
+			color = C.paper2, textColor = C.ink, textSize = T.size.xs,
+			onClick = function()
+				UI.showOdds(UI.gui, "EVERY CHANCE", Config.CapsuleOdds(),
+					"A duplicate pays coins back instead.")
+			end })
 
 		local function refreshShop()
 			refreshSkins()
