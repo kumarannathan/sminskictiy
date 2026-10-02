@@ -1374,6 +1374,83 @@ function Config.MasteryTrack(id)
 	return nil
 end
 
+---------------------------------------------------------------------------
+-- THE PRIZE WHEEL (docs/RELEASE.md 2.3). One spin a day, on the plaza.
+--
+-- DATE-SEEDED ON THE SERVER, so rejoining cannot re-roll it and every player
+-- on every server gets their own honest spin rather than whatever the client
+-- felt like. The segment is decided server-side and the client is told which
+-- one to land on -- the animation follows the result, never the other way
+-- round.
+--
+-- ODDS ARE PUBLISHED because the game shows them on the wheel itself, which
+-- is both the right thing and what Roblox requires of any random reward
+-- (docs/RELEASE.md section 0). The weights below ARE the disclosure, so a
+-- change here is a change to what players are told.
+--
+-- NOTHING HERE IS BUYABLE. The spin is free and daily; there is no "spin
+-- again" product, which is what keeps the wheel out of the Paid Random Items
+-- rules entirely rather than needing to be gated around them.
+---------------------------------------------------------------------------
+Config.Wheel = {
+	{ id = "coins_s", name = "200 coins", weight = 30, coins = 200, color = Color3.fromRGB(245, 196, 78) },
+	{ id = "coins_m", name = "500 coins", weight = 20, coins = 500, color = Color3.fromRGB(245, 196, 78) },
+	{ id = "coins_l", name = "1500 coins", weight = 8, coins = 1500, color = Color3.fromRGB(184, 134, 42) },
+	{ id = "xp", name = "250 XP", weight = 18, xp = 250, color = Color3.fromRGB(111, 178, 232) },
+	{ id = "ticket", name = "Capsule", weight = 14, ticket = 1, color = Color3.fromRGB(240, 112, 94) },
+	{ id = "furn", name = "Furniture", weight = 8, furnRoll = true, color = Color3.fromRGB(143, 208, 122) },
+	{ id = "jackpot", name = "JACKPOT", weight = 2, coins = 5000, ticket = 1, color = Color3.fromRGB(183, 155, 232) },
+}
+
+-- the odds exactly as the wheel shows them, so the UI cannot drift from the
+-- table it is drawing
+function Config.WheelOdds()
+	local total = 0
+	for _, w in Config.Wheel do total += w.weight end
+	local out = {}
+	for _, w in Config.Wheel do
+		table.insert(out, { id = w.id, name = w.name, pct = w.weight / total * 100 })
+	end
+	return out, total
+end
+
+-- OUR OWN PRNG, NOT Random.new. A seeded Roblox Random is only reproducible
+-- for as long as Roblox's generator is: if the engine ever changes it, every
+-- player's "today's spin" changes under them mid-day, and the stored
+-- wheelDay would stop a re-spin while the prize they were shown no longer
+-- matches what the server recomputes.
+--
+-- This is a plain integer hash (a Wang/xorshift mix). It is deterministic
+-- forever, identical on client and server, and testable outside Roblox --
+-- which is how this was found: the headless tests have no Random at all.
+-- bit32, not the `~` and `>>` operators: those are Lua 5.3 and Luau does not
+-- have them. The parse failure was immediate, which is the point of having a
+-- syntax check that is not Studio.
+local function hash01(n)
+	n = math.floor(math.abs(tonumber(n) or 0)) % 4294967296
+	n = bit32.bxor(n, bit32.rshift(n, 16))
+	n = (n * 2246822519) % 4294967296
+	n = bit32.bxor(n, bit32.rshift(n, 13))
+	n = (n * 3266489917) % 4294967296
+	n = bit32.bxor(n, bit32.rshift(n, 16))
+	return (n % 1000003) / 1000003
+end
+Config.hash01 = hash01
+
+-- DETERMINISTIC FROM A SEED. The server passes the day and the player's id,
+-- so the same player on the same day gets the same answer however many times
+-- this is called -- which is what makes a rejoin not a re-roll.
+function Config.WheelSpin(seed)
+	local total = 0
+	for _, w in Config.Wheel do total += w.weight end
+	local roll = hash01(math.floor(tonumber(seed) or 0)) * total
+	for i, w in Config.Wheel do
+		roll -= w.weight
+		if roll <= 0 then return i, w end
+	end
+	return #Config.Wheel, Config.Wheel[#Config.Wheel]
+end
+
 function Config.Set(id)
 	for _, st in Config.Sets do
 		if st.id == id then return st end

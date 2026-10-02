@@ -1928,6 +1928,7 @@ do
 			placed = type(c.placed) == "table" and c.placed or {},
 			mastery = type(c.mastery) == "table" and c.mastery or {},
 			title = c.title,
+			wheelDay = c.wheelDay,
 			sets = type(c.sets) == "table" and c.sets or {},
 			titles = type(c.titles) == "table" and c.titles or {},
 			tutorial = c.tutorial == true, tour = c.tour == true, apts = type(c.apts) == "table" and c.apts or {}, homeCar = c.homeCar, sleepReady = (os.time() - (tonumber(c.lastSleep) or 0)) > 20 * 3600,
@@ -2403,6 +2404,72 @@ do
 			c.tour = true
 			task.spawn(save, player)
 			return { ok = true, city = public(s) }
+		elseif action == "wheel" or action == "spin" then
+			-----------------------------------------------------------------
+			-- THE PRIZE WHEEL (Config.Wheel). One free spin a day.
+			--
+			-- THE SERVER DECIDES AND THE ANIMATION FOLLOWS. The client is told
+			-- which segment it landed on and spins to it; it never picks and
+			-- reports, which would make the wheel a suggestion.
+			--
+			-- SEEDED BY DAY AND PLAYER, so rejoining cannot re-roll: the same
+			-- player on the same day gets the same answer however many times
+			-- this runs. The stored day is what stops a second spin, and the
+			-- seed is what stops the first one being shopped for.
+			-----------------------------------------------------------------
+			local today = os.date("!*t")
+			local daykey = ("%04d%02d%02d"):format(today.year, today.month, today.day)
+
+			if action == "wheel" then
+				return { ok = true, spun = c.wheelDay == daykey,
+					last = c.wheelLast, odds = Config.WheelOdds() }
+			end
+
+			if c.wheelDay == daykey then
+				return { ok = false, reason = "come back tomorrow" }
+			end
+			if not near(pos, Places.CityWheel, 40) then
+				return { ok = false, reason = "the wheel is on the plaza by the Job Center" }
+			end
+
+			local seed = tonumber(daykey) + player.UserId % 100000
+			local index, seg = Config.WheelSpin(seed)
+			c.wheelDay = daykey
+			c.wheelLast = seg.id
+
+			local coins, extra = 0, {}
+			if seg.coins then coins = pay(player, s, seg.coins, 0, nil) end
+			if seg.xp then pay(player, s, 0, seg.xp, nil) end
+			if seg.ticket then
+				c.tickets = math.max(0, math.floor(tonumber(c.tickets) or 0)) + seg.ticket
+				extra.ticket = seg.ticket
+			end
+			if seg.furnRoll then
+				-- A PIECE YOU DO NOT ALREADY OWN, chosen from what is left.
+				-- Handing somebody a duplicate as a prize is worse than coins,
+				-- and the wheel is supposed to feel like a present.
+				c.furn = type(c.furn) == "table" and c.furn or {}
+				local pool = {}
+				for _, f in Config.Furniture do
+					if not c.furn[f.id] then table.insert(pool, f.id) end
+				end
+				if #pool > 0 then
+					-- same PRNG as the spin itself, so the whole result is
+					-- reproducible from the seed rather than half of it
+					local pick = pool[math.floor(Config.hash01(seed + 7) * #pool) + 1]
+					c.furn[pick] = true
+					extra.furniture = pick
+				else
+					coins += pay(player, s, 500, 0, nil) -- nothing left to give
+					extra.insteadCoins = 500
+				end
+			end
+			save(player)
+			return { ok = true, index = index, segment = seg.id, name = seg.name,
+				coins = coins, ticket = extra.ticket, furniture = extra.furniture,
+				insteadCoins = extra.insteadCoins,
+				city = public(s), data = publicData(s) }
+
 		elseif action == "mastery" or action == "claimMastery" or action == "setTitle" then
 			-----------------------------------------------------------------
 			-- JOB MASTERY (docs/RELEASE.md 2.4).

@@ -429,6 +429,56 @@ for _, m in Config.Mastery do
 end
 
 ---------------------------------------------------------------------------
+section("Prize wheel")
+---------------------------------------------------------------------------
+-- ODDS ARE A DISCLOSURE, NOT A DETAIL. docs/RELEASE.md section 0 makes
+-- per-outcome odds a release gate, and the wheel shows this table on screen,
+-- so these assertions are about what players are TOLD, not just maths.
+local odds, wtotal = Config.WheelOdds()
+ok("every segment has odds", #odds == #Config.Wheel)
+local sum = 0
+for _, o in odds do
+	ok("segment " .. o.id .. " has a name", type(o.name) == "string" and #o.name > 0)
+	ok("segment " .. o.id .. " can be won", o.pct > 0, ("%.2f%%"):format(o.pct))
+	sum += o.pct
+end
+ok("the odds sum to 100", math.abs(sum - 100) < 0.01, ("%.3f"):format(sum))
+
+for _, w in Config.Wheel do
+	ok("wheel " .. w.id .. " pays something",
+		(w.coins or 0) > 0 or (w.xp or 0) > 0 or w.ticket or w.furnRoll,
+		"a blank segment is a punishment for spinning")
+	ok("wheel " .. w.id .. " has a colour", typeof(w.color) == "Color3")
+end
+
+-- THE SAME SEED MUST GIVE THE SAME ANSWER. That is what makes rejoining not a
+-- re-roll: the server recomputes rather than remembering, so a player who
+-- disconnects mid-spin cannot shop for a better one.
+for _, seed in { 1, 20261001, 987654 } do
+	local a = Config.WheelSpin(seed)
+	local b = Config.WheelSpin(seed)
+	ok("spin is deterministic for seed " .. seed, a == b, ("%d vs %d"):format(a, b))
+end
+
+-- and different seeds must actually spread, or everyone wins the same thing
+local seen, spins = {}, 400
+for i = 1, spins do
+	local idx = Config.WheelSpin(i * 7919)
+	seen[idx] = (seen[idx] or 0) + 1
+end
+local distinct = 0
+for _ in pairs(seen) do distinct += 1 end
+ok("spins spread across segments", distinct >= math.min(5, #Config.Wheel),
+	("only %d of %d segments in %d spins"):format(distinct, #Config.Wheel, spins))
+-- the jackpot is rare but reachable: a 2% segment should turn up in 400 rolls
+local jackIdx
+for i, w in Config.Wheel do if w.id == "jackpot" then jackIdx = i end end
+ok("the jackpot is reachable", (seen[jackIdx] or 0) > 0,
+	"a prize nobody can win is a lie on the odds table")
+ok("the jackpot stays rare", (seen[jackIdx] or 0) < spins * 0.1,
+	("%d of %d"):format(seen[jackIdx] or 0, spins))
+
+---------------------------------------------------------------------------
 section("Pixel grid (static, against City.lua source)")
 ---------------------------------------------------------------------------
 -- EVERY HUD DIMENSION IS A MULTIPLE OF 4 (docs/PIXEL_UI.md section 1). With

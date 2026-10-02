@@ -550,6 +550,10 @@ Places.RestaurantRow = V(750, 0, 750) -- the Row's middle: wayfinding, the map
 
 -- where the Job Center's door and its board are, for prompts and wayfinding
 Places.CityJobCentre = V(150, 0, -268)
+-- THE PRIZE WHEEL, on the plaza outside the Job Center (docs/RELEASE.md 2.3).
+-- A real object on a real lot, not a menu: walking past it is the reminder,
+-- which is the whole reason it is not just another tab.
+Places.CityWheel = V(96, 0, -232)
 Places.CityJobBoard = V(150, 0, -206)
 -- every workplace that has stations in it, by restaurant id
 Places.CityWorkplaces = {

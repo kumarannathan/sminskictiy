@@ -74,6 +74,14 @@ return function(deps)
 		Build.base()
 		for _, b in Build.blocks() do newBlock(b) end
 		for _, b in Build.nature() do newBlock(b) end
+		-- THE WHEEL IS BUILT WITH THE CITY, not streamed with a block. It is
+		-- one small model on a fixed plaza and it has to be there the moment
+		-- somebody walks past, which is the only reason it exists as an
+		-- object rather than a menu.
+		--
+		-- City.Wheel is constructed far below this function but City.build is
+		-- not CALLED until City.enter, so it is there by the time this runs.
+		if City.Wheel then City.Wheel.build() end
 	end
 	-- give each finished block's parked cars a model
 	local function spawnParked(folder)
@@ -2379,6 +2387,12 @@ return function(deps)
 	City.Album = require(mod("CityAlbum"))({
 		UI = UI, Config = Config, City = City, remote = remote, gui = gui,
 	})
+	-- the prize wheel on the plaza. A real object on a real lot: walking past
+	-- it is the reminder you have a free spin.
+	City.Wheel = require(mod("CityWheel"))({
+		K = K, UI = UI, Config = Config, Places = Places, City = City,
+		remote = remote, Audio = Audio, gui = gui,
+	})
 	-- cafes, bakeries, noodle bars: order, sit, eat
 	local Venues = require(mod("CityVenues"))({
 		K = K, Build = Build, Models = Models, UI = UI, Audio = Audio, Places = Places,
@@ -2766,6 +2780,11 @@ return function(deps)
 			-- it is on a clock and the job is not
 			local ep = City.Events.prompt(me)
 			if ep then setPromptT(ep) return end
+			-- THE WHEEL SITS ABOVE JOBS AND BELOW EVENTS. It is free, daily
+			-- and takes four seconds, so a player standing on it almost
+			-- certainly means to spin -- but an event on a clock still wins.
+			local wp = City.Wheel and City.Wheel.prompt(me)
+			if wp then setPromptT(wp) return end
 			-- a Restaurant Row plot has nothing on it but its own pads and pass
 			local tp = City.Tycoon and City.Tycoon.prompt(me)
 			if tp then setPromptT(tp) return end

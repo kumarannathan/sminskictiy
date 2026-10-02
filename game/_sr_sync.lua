@@ -32,7 +32,7 @@ _G.SR_sync = function()
 		-- before StarterPlayerScripts even starts, which is the whole point
 		put(game.ReplicatedFirst, "SminskiTitle", "LocalScript", "SminskiTitle.client.lua")
 		local main = put(game.StarterPlayer.StarterPlayerScripts, "SminskiRunner", "LocalScript", "SminskiRunner.client.lua")
-		for _, m in { "Models", "World", "Audio", "UI", "Multiplayer", "Hub", "HubSets", "HubStreets", "Garden", "Tour", "Park", "City", "CityKit", "CityBuild", "CityMinimap", "CityHome", "CityFurnish", "CityAlbum", "CityDress", "CityVenues", "CityGuide", "CityRoads", "CityApts", "CityWeather", "CityWayfind", "CityHangouts", "CitySound", "CityJobs", "CityKitchen", "CityEvents", "CityGrocery", "CityTycoon" } do
+		for _, m in { "Models", "World", "Audio", "UI", "Multiplayer", "Hub", "HubSets", "HubStreets", "Garden", "Tour", "Park", "City", "CityKit", "CityBuild", "CityMinimap", "CityHome", "CityFurnish", "CityAlbum", "CityWheel", "CityDress", "CityVenues", "CityGuide", "CityRoads", "CityApts", "CityWeather", "CityWayfind", "CityHangouts", "CitySound", "CityJobs", "CityKitchen", "CityEvents", "CityGrocery", "CityTycoon" } do
 			put(main, m, "ModuleScript", m .. ".lua")
 		end
 	end)
