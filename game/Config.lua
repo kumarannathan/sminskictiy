@@ -51,26 +51,31 @@ Config.ComboPoints = { Coin = 1, Dodge = 5, Perfect = 10, NearMiss = 15, Chain =
 ---------------------------------------------------------------------------
 -- ECONOMY
 ---------------------------------------------------------------------------
-Config.CapsuleCost = 400
--- CAPSULES ARE PAID RANDOM ITEMS, AND THIS WAS WRONG UNTIL 2026-10-02.
+-- CAPSULES ARE EARNED, NEVER BOUGHT. Decided 2026-10-02.
 --
--- The old comment said capsules cost only EARNED coins so the rules did not
--- apply. That stopped being true the day coin bundles went live: there are
--- eight Developer Products selling coins for Robux (Config.Products), coins
--- buy capsules, so capsules are indirectly purchasable with Robux -- which is
--- Roblox's own definition of a Paid Random Item.
+-- The coin price is gone. A capsule now costs one TICKET, and a ticket comes
+-- only from the activity meter -- coins you EARN fill it, capped at 187 a
+-- minute, so the fastest possible capsule is ten minutes of actually playing.
+-- The wheel and the daily login also pay tickets; nothing sells them.
 --
--- With this true, the server checks PolicyService.ArePaidRandomItemsRestricted
--- and refuses capsules and the claw for players whose account or region does
--- not permit them. That is a real cost: those players lose a whole retention
--- loop. The alternative, recommended in docs/RELEASE.md section 0, is to make
--- the activity meter the ONLY route to a capsule so they stop being paid
--- random items for everybody -- that is a design decision with economy
--- consequences, so it is the owner's call, not a thing to flip quietly.
+-- WHY THIS AND NOT A POLICY GATE. Coins are purchasable with Robux, so while
+-- capsules cost coins they were Paid Random Items, and the compliant answer
+-- was to refuse them to restricted players entirely -- taking a whole
+-- retention loop away from a real share of the audience. Breaking the link to
+-- coins removes the problem instead of gating around it: capsules are not
+-- purchasable at all now, by anybody, so there is nothing to restrict and
+-- every player gets the same game.
 --
--- Per-outcome odds are published (Config.CapsuleOdds / Config.ClawOdds) and
--- shown in game, which the rules require independently of the above.
-Config.CapsulesArePaid = true
+-- The claw moved to tickets for the same reason: it cost coins and paid out
+-- capsule characters and outfits, which made it a paid random item by exactly
+-- the same chain of reasoning.
+--
+-- CapsulesArePaid stays as the switch that turns the policy check back on. It
+-- is false because the premise is now true, not because the premise is being
+-- ignored -- which is what was wrong with it before.
+Config.CapsuleCost = 0          -- not for sale
+Config.CapsuleTicketCost = 1    -- one ticket, earned
+Config.CapsulesArePaid = false
 Config.ReviveBaseCost = 250 -- coins; doubles with each paid revive in a run
 -- Optional Robux revive: set to your Developer Product id (a number) to enable
 Config.ReviveProductId = 3713434937

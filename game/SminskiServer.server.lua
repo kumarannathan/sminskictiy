@@ -683,8 +683,16 @@ rf("OpenCapsule").OnServerInvoke = function(player)
 	if Config.CapsulesArePaid and paidRandomRestricted(player) then
 		return { ok = false, reason = "restricted" }
 	end
-	if s.data.Coins < Config.CapsuleCost then return { ok = false, reason = "coins" } end
-	s.data.Coins -= Config.CapsuleCost
+	-- TICKETS, NOT COINS. A capsule is earned on the activity meter; nothing
+	-- sells one. See the note on Config.CapsuleCost.
+	local c = saved(s)
+	local have = math.max(0, math.floor(tonumber(c.tickets) or 0))
+	if have < Config.CapsuleTicketCost then return { ok = false, reason = "ticket" } end
+	-- DECREMENT BEFORE THE ROLL, NEVER AFTER: rollCapsule spawns a save of
+	-- its own, and a write landing between the roll and the decrement would
+	-- persist a spent ticket as unspent. Nothing yields in between, so two
+	-- calls in one frame cannot both get past the check.
+	c.tickets = have - Config.CapsuleTicketCost
 	return rollCapsule(player, s)
 end
 
@@ -744,10 +752,10 @@ rf("ClaimDaily").OnServerInvoke = function(player)
 	d.Coins += out.coins
 	d.TotalCoins += out.coins
 	if gift.capsule then
-		-- GATED LIKE EVERY OTHER CAPSULE PATH. OpenCapsule and the claw both
-		-- check this; the daily-login gift did not, so flipping
-		-- CapsulesArePaid left a route that still handed a restricted player
-		-- a random item.
+		-- The gate stays, and is now inert: CapsulesArePaid is false because
+		-- capsules cannot be bought at all. If a future change ever puts them
+		-- back on a purchasable currency, this and the two machines start
+		-- refusing again together rather than one of them being forgotten.
 		if not (Config.CapsulesArePaid and paidRandomRestricted(player)) then
 			out.capsule = rollCapsule(player, s)
 		end
@@ -2331,7 +2339,13 @@ do
 			if Config.CapsulesArePaid and paidRandomRestricted(player) then
 				return { ok = false, reason = "restricted" }
 			end
-			if not spend(player, s, CC.Claw.price) then return { ok = false, reason = "not enough coins" } end
+			-- A TICKET, FOR THE SAME REASON AS THE CAPSULE MACHINE. The claw
+			-- pays out capsule characters and outfits, so while it cost coins
+			-- -- which are purchasable -- it was a paid random item by exactly
+			-- the same chain of reasoning.
+			local haveT = math.max(0, math.floor(tonumber(c.tickets) or 0))
+			if haveT < 1 then return { ok = false, reason = "you need a capsule ticket -- play a while to earn one" } end
+			c.tickets = haveT - 1
 			local r = math.random()
 			local prize
 			-- thresholds come from Config.Claw so the odds the machine SHOWS

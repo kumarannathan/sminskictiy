@@ -781,6 +781,8 @@ ctx.openCapsule = function()
 			-- one with no path for it -- a dead tap, forever, for every
 			-- restricted player.
 			UI.toast("capsules aren't available on this account — everything else still is", UI.C.inkSoft)
+		elseif res and res.reason == "ticket" then
+			UI.toast("you need a capsule ticket — keep playing and one fills up", UI.C.inkSoft)
 		elseif res and res.reason == "coins" then
 			UI.toast("not enough coins")
 		elseif res then

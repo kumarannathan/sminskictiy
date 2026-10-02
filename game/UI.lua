@@ -1503,8 +1503,10 @@ return function(Config, Models, Audio, ctx)
 		capBottom.CFrame = CFrame.new(0, 1.35, 0) * CFrame.Angles(0, 0, math.pi / 2)
 		capBottom.Size = Vector3.new(1.8, 3.42, 3.42)
 		local capBand = Models.part(capWM, Vector3.new(0.3, 3.5, 3.5), CFrame.new(0, 2.2, 0) * CFrame.Angles(0, 0, math.pi / 2), C.ink, Enum.Material.SmoothPlastic, { shape = Enum.PartType.Cylinder })
-		local capBtn = button(capCard, "OPEN  ◉ " .. Config.CapsuleCost, { size = UDim2.new(1, -30, 0, 64), pos = UDim2.new(0.5, 0, 1, -16), anchor = Vector2.new(0.5, 1), color = C.coral, textSize = 26, onClick = function() ctx.openCapsule() end })
-		text(capCard, "mystery toy capsule", { Size = UDim2.new(1, 0, 0, 20), Position = UDim2.fromOffset(0, 266), Font = DISPLAY, TextSize = 18, TextColor3 = C.inkSoft })
+		-- TICKETS, NOT COINS. The button used to advertise a coin price that
+		-- no longer exists; a capsule is earned on the activity meter now.
+		local capBtn = button(capCard, "OPEN  \u{1F3AB}", { size = UDim2.new(1, -30, 0, 64), pos = UDim2.new(0.5, 0, 1, -16), anchor = Vector2.new(0.5, 1), color = C.coral, textSize = 26, onClick = function() ctx.openCapsule() end })
+		text(capCard, "one ticket \u{00B7} earned by playing", { Size = UDim2.new(1, 0, 0, 20), Position = UDim2.fromOffset(0, 266), Font = DISPLAY, TextSize = 18, TextColor3 = C.inkSoft })
 
 		local oddsHolder, oddsCard = card(capPage, UDim2.new(1, -370, 0, 380), UDim2.fromOffset(360, 10), nil, C.white)
 		text(oddsCard, "WHAT'S INSIDE", { Size = UDim2.new(1, 0, 0, 30), Position = UDim2.fromOffset(0, 14), Font = DISPLAY, TextSize = 24 })
@@ -1546,7 +1548,9 @@ return function(Config, Models, Audio, ctx)
 			refreshOutfits()
 			refreshUpgrades()
 			refreshPasses()
-			capBtn.setColor(ctx.data.Coins >= Config.CapsuleCost and C.coral or C.paper2:Lerp(C.inkSoft, 0.3))
+			-- by TICKETS held, not coins
+			local tix = (ctx.data.City and ctx.data.City.tickets) or 0
+			capBtn.setColor(tix >= Config.CapsuleTicketCost and C.coral or C.paper2:Lerp(C.inkSoft, 0.3))
 		end
 		refreshers.shop = function()
 			refreshShop()

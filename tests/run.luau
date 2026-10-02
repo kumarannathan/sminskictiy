@@ -549,8 +549,15 @@ section("Random-reward compliance")
 -- THIS SECTION IS A RELEASE GATE, not a nicety (docs/RELEASE.md section 0).
 -- Roblox requires per-outcome odds for anything random that is purchasable,
 -- and coins are purchasable with Robux, so capsules and the claw both are.
-ok("capsules are declared as paid random items", Config.CapsulesArePaid == true,
-	"eight live coin products make capsules indirectly Robux-purchasable")
+-- CAPSULES ARE EARNED, NOT BOUGHT (decided 2026-10-02). The compliance
+-- problem is removed rather than gated around: if nothing sells a capsule,
+-- there is no paid random item and every player gets the same game.
+ok("capsules are not for sale", (Config.CapsuleCost or 0) == 0,
+	"a coin price makes them Robux-purchasable and therefore restricted")
+ok("a capsule costs a ticket", (Config.CapsuleTicketCost or 0) > 0)
+ok("the policy flag matches reality", Config.CapsulesArePaid == false,
+	"false is only correct while nothing sells a capsule -- if a price comes "
+	.. "back, this must go true and restricted players lose the loop again")
 
 local cOdds = Config.CapsuleOdds()
 ok("every character has published odds", #cOdds == #Config.Characters,
@@ -604,6 +611,17 @@ if zblock then
 	end
 	ok("size table is populated", n >= 8, tostring(n) .. " entries")
 end
+
+-- BOTH RANDOM-ITEM MACHINES MUST SPEND A TICKET. The claw pays out capsule
+-- characters and outfits, so a coin price there reintroduces exactly the
+-- problem the capsule machine just had.
+local srv = fs.readFile("game/SminskiServer.server.lua")
+ok("the capsule machine spends a ticket",
+	srv:find("c.tickets = have - Config.CapsuleTicketCost", 1, true) ~= nil)
+ok("the claw spends a ticket too", srv:find("c.tickets = haveT - 1", 1, true) ~= nil,
+	"it pays out capsule characters, so a coin price makes it a paid random item")
+ok("the claw no longer charges coins",
+	srv:find("spend(player, s, CC.Claw.price)", 1, true) == nil)
 
 local ui = fs.readFile("game/UI.lua")
 -- THE TAP FLOOR LIVES IN THE BUTTON CONSTRUCTOR, not at 43 call sites. If

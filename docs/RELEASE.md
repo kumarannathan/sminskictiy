@@ -41,12 +41,28 @@ What has to happen before the game is advertised as released:
    TIER odds ("Rare is 27%"), which does not tell a player their chance of any
    particular character — the number the rules are actually about. The claw's
    odds were four magic numbers in the server and were disclosed nowhere.
-4. **STILL OPEN, AND IT IS YOUR CALL.** Restricted players are now refused
-   capsules and the claw, with an explanation rather than a dead button. That
-   is the legally safe reading and it costs those players a whole retention
-   loop. The alternative is to make the activity meter the ONLY route to a
-   capsule, so they stop being paid random items for everybody — that changes
-   the economy, so it is not a thing to flip quietly.
+4. ~~Decide the restricted-player path.~~ **Done 2026-10-02 — the owner chose
+   the activity meter.**
+
+   Capsules have no coin price any more. One costs a TICKET, and a ticket comes
+   only from the activity meter: coins you *earn* fill it, capped at 187 a
+   minute, so the fastest possible capsule is ten minutes of actually playing.
+   The wheel and the daily login also pay tickets. Nothing sells them.
+
+   The claw moved to tickets too. It pays out capsule characters and outfits,
+   so while it cost coins — which are purchasable — it was a paid random item
+   by exactly the same chain of reasoning, and leaving it would have undone
+   the whole change.
+
+   **This removes the problem rather than gating around it.** Capsules are not
+   purchasable by anybody, so there is nothing to restrict, and every player
+   gets the same game. `CapsulesArePaid` stays as the switch that turns the
+   policy check back on — it is false because the premise is now true, which
+   is precisely what was wrong with it before.
+
+   **The economy consequence to watch:** 400 coins used to be a capsule, and
+   coins are now one sink short. If coin balances inflate, that is where it
+   came from.
 
 That fourth point is a design decision, not a code change, and it should be
 made before §2 is built on top of capsules.
